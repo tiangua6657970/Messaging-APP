@@ -21,11 +21,13 @@ import {
 import Typography from "@src/components/ui/data-display/Typography.vue";
 import Dropdown from "@src/components/ui/navigation/Dropdown/Dropdown.vue";
 import DropdownLink from "@src/components/ui/navigation/Dropdown/DropdownLink.vue";
+import { IChat } from "@src/typeV2";
+import { ossURL } from "@src/service/config";
 
 const props = defineProps<{
-  conversation: IConversation;
+  chat: IChat,
   isActive?: boolean;
-  handleConversationChange?: (conversationId: number) => void;
+  handleConversationChange?: (conversationId: string) => void;
 }>();
 
 const store = useStore();
@@ -66,13 +68,8 @@ const handleSelectConversation = () => {
   showContextMenu.value = false;
 
   if (props.handleConversationChange)
-    props.handleConversationChange(props.conversation.id);
+    props.handleConversationChange(props.chat.list_id);
 };
-
-// last message in conversation to display
-const lastMessage = computed(
-  () => props.conversation.messages[props.conversation.messages.length - 1]
-);
 
 // (event) remove the unread indicator when opening the conversation
 const handleRemoveUnread = () => {
@@ -86,13 +83,12 @@ const handleRemoveUnread = () => {
 <template>
   <div class="select-none">
     <button
-      :aria-label="'conversation with' + getName(props.conversation)"
+      :aria-label="'conversation with' + props.chat.show_name"
       tabindex="0"
       v-click-outside="contextConfig"
       @contextmenu.prevent="handleShowContextMenu"
       @click="
         ($event) => {
-          handleRemoveUnread();
           handleSelectConversation();
         }
       "
@@ -105,7 +101,7 @@ const handleRemoveUnread = () => {
       <!--profile image-->
       <div class="mr-4">
         <div
-          :style="{ backgroundImage: `url(${getAvatar(props.conversation)})` }"
+          :style="{ backgroundImage: `url(${ossURL + props.chat.avatar})` }"
           class="w-7 h-7 rounded-full bg-cover bg-center"
         ></div>
       </div>
@@ -116,13 +112,13 @@ const handleRemoveUnread = () => {
           <div class="flex items-start">
             <div class="grow mb-4 text-start">
               <Typography variant="heading-2">
-                {{ getName(props.conversation) }}
+                {{ props.chat.show_name }}
               </Typography>
             </div>
 
             <!--last message date-->
             <Typography variant="body-1">
-              {{ lastMessage?.date }}
+              {{ props.chat.time }}
             </Typography>
           </div>
         </div>
@@ -132,43 +128,42 @@ const handleRemoveUnread = () => {
             <!--draft Message-->
             <Typography
               v-if="
-                props.conversation.draftMessage &&
-                props.conversation.id !== store.activeConversationId
+                props.chat.draftMessage &&
+                props.chat.list_id !== store.activeConversationId
               "
               variant="body-2"
               class="flex justify-start items-center text-red-400"
               no-color
             >
-              draft: {{ shorten(props.conversation.draftMessage) }}
+              draft: {{ shorten(props.chat.draftMessage) }}
             </Typography>
 
             <!--recording name-->
             <Typography
               v-else-if="
-                lastMessage.type === 'recording' && lastMessage.content
+                props.chat.type === 1
               "
               variant="body-2"
               class="flex justify-start items-center"
             >
               <MicrophoneIcon
                 class="w-4 h-4 mr-2 text-black opacity-60 dark:text-white dark:opacity-70"
-                :class="{ 'text-indigo-400': props.conversation.unread }"
+                :class="{ 'text-indigo-400': props.chat.no_reader_num }"
               />
-              <span :class="{ 'text-indigo-400': props.conversation.unread }">
+              <span :class="{ 'text-indigo-400': props.chat.no_reader_num }">
                 Recording
-                {{ (lastMessage.content as IRecording).duration }}
               </span>
             </Typography>
 
             <!--attachments title-->
             <Typography
-              v-else-if="hasAttachments(lastMessage)"
+              v-else-if="props.chat.type === 2"
               variant="body-2"
               class="flex justify-start items-center"
-              :class="{ 'text-indigo-400': props.conversation.unread }"
+              :class="{ 'text-indigo-400': props.chat.no_reader_num }"
             >
-              <span :class="{ 'text-indigo-400': props.conversation.unread }">
-                {{ (lastMessage?.attachments as IAttachment[])[0].name }}
+              <span :class="{ 'text-indigo-400': props.chat.no_reader_num }">
+                文件
               </span>
             </Typography>
 
@@ -177,20 +172,20 @@ const handleRemoveUnread = () => {
               v-else
               variant="body-2"
               class="flex justify-start items-center"
-              :class="{ 'text-indigo-400': props.conversation.unread }"
+              :class="{ 'text-indigo-400': props.chat.no_reader_num }"
             >
-              <span :class="{ 'text-indigo-400': props.conversation.unread }">
-                {{ shorten(lastMessage) }}
+              <span :class="{ 'text-indigo-400': props.chat.no_reader_num }">
+                {{ props.chat.last_msg }}
               </span>
             </Typography>
           </div>
 
-          <div v-if="props.conversation.unread">
+          <div v-if="props.chat.no_reader_num">
             <div
               class="w-[18px] h-[18px] flex justify-center items-center rounded-[50%] bg-indigo-300"
             >
               <Typography variant="body-1" no-color class="text-white">{{
-                props.conversation.unread
+                  props.chat.no_reader_num
               }}</Typography>
             </div>
           </div>

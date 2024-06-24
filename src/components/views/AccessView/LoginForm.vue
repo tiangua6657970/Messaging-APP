@@ -1,14 +1,39 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from 'vue'
 
-import Typography from "@src/components/ui/data-display/Typography.vue";
-import Button from "@src/components/ui/inputs/Button.vue";
-import IconButton from "@src/components/ui/inputs/IconButton.vue";
-import TextInput from "@src/components/ui/inputs/TextInput.vue";
-import { EyeSlashIcon, EyeIcon } from "@heroicons/vue/24/outline";
-import { RouterLink } from "vue-router";
+import Typography from '@src/components/ui/data-display/Typography.vue'
+import Button from '@src/components/ui/inputs/Button.vue'
+import IconButton from '@src/components/ui/inputs/IconButton.vue'
+import TextInput from '@src/components/ui/inputs/TextInput.vue'
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
+import { RouterLink, useRouter } from "vue-router";
+import { ILogin } from '@src/typeV2'
+import { getThemes, login } from '@src/service'
+import useThemeStore from '@src/store/theme'
+import useChatStore from '@src/store/chat'
+import useAuthStore from '@src/store/auth'
 
-const showPassword = ref(false);
+const showPassword = ref(false)
+const themeStore = useThemeStore()
+const chatStore = useChatStore()
+const authStore = useAuthStore()
+const router = useRouter()
+
+const loginForm = reactive<ILogin>({ username: '你好', password: '123456' })
+async function handleLogin() {
+  try {
+    const res = await login(loginForm)
+    authStore.userinfo = res.data.userinfo
+    authStore.token = res.data.userinfo.token
+    const res2 = await getThemes()
+    themeStore.setThemes(res2.data.merchant)
+    if (res2.data.merchant.length) {
+      authStore.code = res2.data.merchant[0].code
+      await chatStore.refreshChat(res2.data.merchant[0].code)
+    }
+    await router.push({ name: 'Home' })
+  } catch (e) {}
+}
 </script>
 
 <template>
@@ -31,12 +56,20 @@ const showPassword = ref(false);
 
       <!--form-->
       <div class="mb-6">
-        <TextInput label="Email" placeholder="Enter your email" class="mb-5" />
+        <TextInput
+          label="Email"
+          placeholder="Enter your email"
+          class="mb-5"
+          :value="loginForm.username"
+          @value-changed="$event = loginForm.password = $event"
+        />
         <TextInput
           label="Password"
           placeholder="Enter your password"
           :type="showPassword ? 'text' : 'password'"
           class="pr-[40px]"
+          :value="loginForm.password"
+          @value-changed="$event = loginForm.password = $event"
         >
           <template v-slot:endAdornment>
             <IconButton
@@ -60,7 +93,7 @@ const showPassword = ref(false);
 
       <!--local controls-->
       <div class="mb-6">
-        <Button class="w-full mb-4" link to="/">Sign in</Button>
+        <Button class="w-full mb-4" @click="handleLogin">Sign in</Button>
       </div>
 
       <!--divider-->

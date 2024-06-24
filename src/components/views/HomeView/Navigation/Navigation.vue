@@ -15,14 +15,17 @@ import {
 import AccountDropdown from "@src/components/views/HomeView/Navigation/AccountDropdown.vue";
 import Logo from "@src/components/views/HomeView/Navigation/Logo.vue";
 import NavLink from "@src/components/views/HomeView/Navigation/NavLink.vue";
+import useChatStore from "@src/store/chat";
+import { SidebarComponentName } from "@src/typeV2";
 
 const store = useStore();
+const chatStore = useChatStore()
 
 const showDropdown = ref(false);
 
 // (event) change the active sidebar component when clicking on a NavLink
-const handleActiveSidebarComponentChange = (value: string) => {
-  store.activeSidebarComponent = value;
+const handleActiveSidebarComponentChange = (value: SidebarComponentName) => {
+  chatStore.activeSidebarComponent = value;
 };
 </script>
 
@@ -41,9 +44,10 @@ const handleActiveSidebarComponentChange = (value: string) => {
           <li>
             <NavLink
               :icon="ChatBubbleOvalLeftIcon"
+              :notifications="chatStore.unreadMsgCount"
               title="Conversations"
               @click="() => handleActiveSidebarComponentChange('messages')"
-              :active="store.activeSidebarComponent === 'messages'"
+              :active="chatStore.activeSidebarComponent === 'messages'"
             />
           </li>
 
@@ -53,7 +57,7 @@ const handleActiveSidebarComponentChange = (value: string) => {
               :icon="UserIcon"
               title="Contacts"
               @click="() => handleActiveSidebarComponentChange('contacts')"
-              :active="store.activeSidebarComponent === 'contacts'"
+              :active="chatStore.activeSidebarComponent === 'contacts'"
             />
           </li>
 
@@ -76,7 +80,7 @@ const handleActiveSidebarComponentChange = (value: string) => {
               title="Notifications"
               :notifications="3"
               @click="() => handleActiveSidebarComponentChange('notifications')"
-              :active="store.activeSidebarComponent === 'notifications'"
+              :active="chatStore.activeSidebarComponent === 'notifications'"
             />
           </li>
 
@@ -86,7 +90,7 @@ const handleActiveSidebarComponentChange = (value: string) => {
               :icon="PhoneIcon"
               title="Call log"
               @click="() => handleActiveSidebarComponentChange('phone')"
-              :active="store.activeSidebarComponent === 'phone'"
+              :active="chatStore.activeSidebarComponent === 'phone'"
             />
           </li>
 
@@ -96,7 +100,7 @@ const handleActiveSidebarComponentChange = (value: string) => {
               :icon="Cog6ToothIcon"
               title="Settings"
               @click="() => handleActiveSidebarComponentChange('settings')"
-              :active="store.activeSidebarComponent === 'settings'"
+              :active="chatStore.activeSidebarComponent === 'settings'"
             />
           </li>
         </ul>
@@ -121,7 +125,7 @@ const handleActiveSidebarComponentChange = (value: string) => {
               :icon="Cog6ToothIcon"
               title="Settings"
               @click="() => handleActiveSidebarComponentChange('settings')"
-              :active="store.activeSidebarComponent === 'settings'"
+              :active="chatStore.activeSidebarComponent === 'settings'"
             />
           </li>
         </ul>

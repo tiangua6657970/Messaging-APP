@@ -1,43 +1,39 @@
 <script setup lang="ts">
-import type { IContactGroup } from "@src/types";
-import type { Ref } from "vue";
-import { ref } from "vue";
-
-import { getFullName } from "@src/utils";
+import type { IContactGroup } from '@src/typeV2'
+import type { Ref } from 'vue'
+import { ref } from 'vue'
 
 import {
   EllipsisVerticalIcon,
   InformationCircleIcon,
-  TrashIcon,
-} from "@heroicons/vue/24/outline";
-import Typography from "@src/components/ui/data-display/Typography.vue";
-import IconButton from "@src/components/ui/inputs/IconButton.vue";
-import Dropdown from "@src/components/ui/navigation/Dropdown/Dropdown.vue";
-import DropdownLink from "@src/components/ui/navigation/Dropdown/DropdownLink.vue";
+  TrashIcon
+} from '@heroicons/vue/24/outline'
+import Typography from '@src/components/ui/data-display/Typography.vue'
+import IconButton from '@src/components/ui/inputs/IconButton.vue'
+import Dropdown from '@src/components/ui/navigation/Dropdown/Dropdown.vue'
+import DropdownLink from '@src/components/ui/navigation/Dropdown/DropdownLink.vue'
 
 const props = defineProps<{
-  contactGroups?: IContactGroup[];
-  bottomEdge?: number;
-}>();
+  contactGroups: IContactGroup[]
+  bottomEdge?: number
+}>()
 
 // the position of the dropdown menu.
-const dropdownMenuPosition = ref(["top-6", "right-0"]);
+const dropdownMenuPosition = ref(['top-6', 'right-0'])
 
 // controll the states of contact dropdown menus
-const dropdownMenuStates: Ref<boolean[][] | undefined> = ref(
-  props.contactGroups?.map((contactGroup) => {
-    let group = contactGroup.contacts.map(() => false);
-    return group;
+const dropdownMenuStates: Ref<boolean[][]> = ref(
+  props.contactGroups.map(contactGroup => {
+    return contactGroup.data.map(() => false)
   })
-);
+)
 
 // close all contact dropdown menus
 const handleCloseAllMenus = () => {
-  dropdownMenuStates.value = props.contactGroups?.map((contactGroup) => {
-    let group = contactGroup.contacts.map(() => false);
-    return group;
-  });
-};
+  dropdownMenuStates.value = props.contactGroups.map(contactGroup => {
+    return contactGroup.data.map(() => false)
+  })
+}
 
 // (event) open/close the selected dropdown menu.
 const handleToggleDropdown = (
@@ -48,42 +44,42 @@ const handleToggleDropdown = (
   if (props.bottomEdge) {
     let buttonBottom = (
       event.currentTarget as HTMLElement
-    ).getBoundingClientRect().bottom;
+    ).getBoundingClientRect().bottom
 
     if (buttonBottom >= props.bottomEdge - 75) {
-      dropdownMenuPosition.value = ["bottom-6", "right-0"];
+      dropdownMenuPosition.value = ['bottom-6', 'right-0']
     } else {
-      dropdownMenuPosition.value = ["top-6", "right-0"];
+      dropdownMenuPosition.value = ['top-6', 'right-0']
     }
   }
 
   dropdownMenuStates.value = (dropdownMenuStates.value as boolean[][]).map(
-    (group) => {
+    group => {
       return group.map((value, idx) => {
-        if (idx === index) return value;
-        else return false;
-      });
+        if (idx === index) return value
+        else return false
+      })
     }
-  );
+  )
 
   dropdownMenuStates.value[groupIndex][index] = !(
     dropdownMenuStates.value as boolean[][]
-  )[groupIndex][index];
-};
+  )[groupIndex][index]
+}
 
 // (event) close doprdown menu when clicking outside
 const handleClickOutside = (event: Event) => {
-  let target = event.target as HTMLElement;
-  let parentElement = target.parentElement as HTMLElement;
+  let target = event.target as HTMLElement
+  let parentElement = target.parentElement as HTMLElement
 
   if (
     target &&
-    !target.classList.contains("open-menu") &&
-    !(parentElement && parentElement.classList.contains("open-menu"))
+    !target.classList.contains('open-menu') &&
+    !(parentElement && parentElement.classList.contains('open-menu'))
   ) {
-    handleCloseAllMenus();
+    handleCloseAllMenus()
   }
-};
+}
 </script>
 
 <template>
@@ -94,16 +90,16 @@ const handleClickOutside = (event: Event) => {
     </Typography>
 
     <!--contacts-->
-    <div v-for="(contact, index) in group.contacts" :key="index">
+    <div v-for="(contact, index) in group.data" :key="index">
       <div class="w-full p-5 flex justify-between items-center">
         <button
           class="default-outline transition-all duration-200 ease-out"
-          :aria-label="getFullName(contact)"
+          :aria-label="contact.name"
         >
           <div class="flex-row">
             <!--contact name-->
             <Typography variant="heading-2">
-              {{ getFullName(contact) }}
+              {{ contact.name }}
             </Typography>
           </div>
         </button>
@@ -113,9 +109,9 @@ const handleClickOutside = (event: Event) => {
           <!--dropdown menu button-->
           <IconButton
             :id="'open-contact-menu-' + index"
-            :aria-expanded="(dropdownMenuStates as boolean[][])[groupIndex][index]"
+            :aria-expanded="dropdownMenuStates[groupIndex][index]"
             :aria-controls="'contact-menu-' + index"
-            @click="(event) => handleToggleDropdown(event, groupIndex, index)"
+            @click="event => handleToggleDropdown(event, groupIndex, index)"
             class="open-menu w-6 h-6"
             title="toggle contact menu"
             aria-label="toggle contact menu"
@@ -131,7 +127,7 @@ const handleClickOutside = (event: Event) => {
             :close-dropdown="handleCloseAllMenus"
             :handle-click-outside="handleClickOutside"
             :aria-labelledby="'open-contact-menu-' + index"
-            :show="(dropdownMenuStates as boolean[][])[groupIndex][index]"
+            :show="Boolean(dropdownMenuStates[groupIndex][index])"
             :position="dropdownMenuPosition"
           >
             <DropdownLink>

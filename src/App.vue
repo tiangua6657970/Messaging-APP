@@ -5,6 +5,9 @@ import useStore from "@src/store/store";
 import { fetchData } from "@src/store/defaults";
 
 import FadeTransition from "@src/components/ui/transitions/FadeTransition.vue";
+import useChatStore from "@src/store/chat";
+import { __TOKEN__ } from "@src/service/base";
+import useAuthStore from "@src/store/auth";
 
 // future features:
 // todo add video calling
@@ -29,6 +32,15 @@ import FadeTransition from "@src/components/ui/transitions/FadeTransition.vue";
 
 const store = useStore();
 
+const authStore = useAuthStore()
+const chatStore = useChatStore()
+
+if (authStore.token && authStore.code) {
+  chatStore.refreshChat(authStore.code)
+}
+
+
+
 // update localStorage with state changes
 store.$subscribe((_mutation, state) => {
   localStorage.setItem("chat", JSON.stringify(state));
@@ -50,6 +62,7 @@ onMounted(async () => {
     conversations: request.data.conversations,
     notifications: request.data.notifications,
     archivedConversations: request.data.archivedConversations,
+    activeConversationId: 1
   });
 });
 

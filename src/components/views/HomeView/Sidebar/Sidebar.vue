@@ -9,20 +9,22 @@ import Contacts from "@src/components/views/HomeView/Sidebar/Contacts/Contacts.v
 import Conversations from "@src/components/views/HomeView/Sidebar/Conversations/Conversations.vue";
 import Notifications from "@src/components/views/HomeView/Sidebar/Notifications/Notifications.vue";
 import Settings from "@src/components/views/HomeView/Sidebar/Settings/Settings.vue";
+import useChatStore from "@src/store/chat";
 
 const store = useStore();
+const chatStore = useChatStore()
 
 // the selected sidebar component (e.g message/notifications/settings)
 const ActiveComponent = computed(() => {
-  if (store.activeSidebarComponent === "messages") {
+  if (chatStore.activeSidebarComponent === "messages") {
     return Conversations;
-  } else if (store.activeSidebarComponent === "contacts") {
+  } else if (chatStore.activeSidebarComponent === "contacts") {
     return Contacts;
-  } else if (store.activeSidebarComponent === "notifications") {
+  } else if (chatStore.activeSidebarComponent === "notifications") {
     return Notifications;
-  } else if (store.activeSidebarComponent === "phone") {
+  } else if (chatStore.activeSidebarComponent === "phone") {
     return Calls;
-  } else if (store.activeSidebarComponent === "settings") {
+  } else if (chatStore.activeSidebarComponent === "settings") {
     return Settings;
   }
 });

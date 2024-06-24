@@ -6,8 +6,10 @@ import NoNotifications from "@src/components/states/empty-states/NoNotifications
 import Loading1 from "@src/components/states/loading-states/Loading1.vue";
 import Notification from "@src/components/views/HomeView/Sidebar/Notifications/Notification.vue";
 import SidebarHeader from "@src/components/views/HomeView/Sidebar/SidebarHeader.vue";
+import useChatStore from "@src/store/chat";
 
 const store = useStore();
+const chatStore = useChatStore()
 </script>
 
 <template>

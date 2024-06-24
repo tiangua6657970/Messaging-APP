@@ -7,14 +7,20 @@ import useStore from "@src/store/store";
 
 import Message from "@src/components/views/HomeView/Chat/ChatMiddle/Message/Message.vue";
 import TimelineDivider from "@src/components/views/HomeView/Chat/ChatMiddle/TimelineDivider.vue";
+import { conversations } from "@src/store/defaults";
+import useChatStore from "@src/store/chat";
+import { IMessageV2, IMessageWrapper } from "@src/typeV2";
+import MessageV2 from "@src/components/views/HomeView/Chat/ChatMiddle/Message/MessageV2.vue";
 
 const props = defineProps<{
   handleSelectMessage: (messageId: number) => void;
   handleDeselectMessage: (messageId: number) => void;
   selectedMessages: number[];
+  messageList: IMessageWrapper[]
 }>();
 
 const store = useStore();
+const chatStore = useChatStore()
 
 const container: Ref<HTMLElement | null> = ref(null);
 
@@ -75,5 +81,25 @@ onMounted(() => {
         :handle-deselect-message="handleDeselectMessage"
       />
     </div>
+    <template v-if="chatStore.status !== 'loading'">
+      <template v-for="(message, index) in messageList">
+        <div
+          :key="index"
+          v-if="message.type === 0"
+        >
+          <TimelineDivider v-if="renderDivider(index, index - 1)" />
+          <MessageV2
+            :message="message.msg"
+            :self="chatStore.chatUserinfo.id === message.msg.user_info.uid"
+            :follow-up="true"
+            :divider="renderDivider(index, index - 1)"
+            :selected="false"
+            :handle-select-message="handleSelectMessage"
+            :handle-deselect-message="handleDeselectMessage"
+          />
+        </div>
+        <div v-else-if="message.msg.content.text">系统消息：{{ message.msg.content.text }}</div>
+      </template>
+    </template>
   </div>
 </template>

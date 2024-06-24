@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { UserPlusIcon } from "@heroicons/vue/24/outline";
-import type { IContactGroup, IUser } from "@src/types";
 import type { Ref } from "vue";
-import { ref, watch } from "vue";
+import { ref, watch, watchEffect } from "vue";
 
 import useStore from "@src/store/store";
 
@@ -13,8 +12,11 @@ import IconButton from "@src/components/ui/inputs/IconButton.vue";
 import SearchInput from "@src/components/ui/inputs/SearchInput.vue";
 import SortedContacts from "@src/components/views/HomeView/Sidebar/Contacts/SortedContacts.vue";
 import SidebarHeader from "@src/components/views/HomeView/Sidebar/SidebarHeader.vue";
+import useChatStore from "@src/store/chat";
+import { IContactGroup } from "@src/typeV2";
 
 const store = useStore();
+const chatStore = useChatStore();
 
 const searchText: Ref<string> = ref("");
 
@@ -24,35 +26,28 @@ const openModal = ref(false);
 const contactContainer: Ref<HTMLElement | null> = ref(null);
 
 // contact groups filtered by search text
-const filteredContactGroups: Ref<IContactGroup[] | undefined> = ref(
-  store.contactGroups
+const filteredContactGroups: Ref<IContactGroup[]> = ref(
+  chatStore.contactGroups
 );
 
 // update the filtered contact groups based on the search text
-watch(searchText, () => {
-  filteredContactGroups.value = store.contactGroups
+watchEffect(() => {
+  console.log('--------------call-----------')
+  const searchTextVal = searchText.value
+  filteredContactGroups.value = chatStore.contactGroups
     ?.map((group) => {
       let newGroup = { ...group };
 
-      newGroup.contacts = newGroup.contacts.filter((contact) => {
-        if (
-          contact.firstName
-            .toLowerCase()
-            .includes(searchText.value.toLowerCase())
-        )
-          return true;
-        else if (
-          contact.lastName
-            .toLowerCase()
-            .includes(searchText.value.toLowerCase())
-        )
-          return true;
+      newGroup.data = newGroup.data.filter((contact) => {
+        return contact.name
+          .toLowerCase()
+          .includes(searchTextVal.toLowerCase()) || contact.user_id === Number(searchTextVal)
       });
 
       return newGroup;
     })
-    .filter((group) => group.contacts.length > 0);
-});
+    .filter((group) => group.data.length > 0)
+})
 </script>
 
 <template>
@@ -88,16 +83,15 @@ watch(searchText, () => {
       style="overflow-x: visible; overflow-y: scroll"
     >
       <Loading2
-        v-if="store.status === 'loading' || store.delayLoading"
+        v-if="chatStore.status === 'loading' || chatStore.delayLoading"
         v-for="item in 5"
       />
 
       <SortedContacts
         v-else-if="
-          store.status === 'success' &&
-          !store.delayLoading &&
-          store.user &&
-          store.user.contacts.length > 0
+          chatStore.status === 'success' &&
+          !chatStore.delayLoading &&
+          chatStore.contactGroups.length > 0
         "
         :contactGroups="filteredContactGroups"
         :bottom-edge="(contactContainer as HTMLElement)?.getBoundingClientRect().bottom"

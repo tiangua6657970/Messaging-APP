@@ -41,7 +41,7 @@ const useStore = defineStore("chat", () => {
     storage.activeSidebarComponent || "messages"
   );
   const delayLoading = ref(true);
-  const activeConversationId: Ref<number | null> = ref(6 || null);
+  const activeConversationId: Ref<number | null> = ref(0 || null);
   const conversationOpen: Ref<string | undefined> = ref(
     storage.conversationOpen
   );

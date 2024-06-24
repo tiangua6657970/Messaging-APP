@@ -1,0 +1,1 @@
+export const ossURL = 'https://browser-1318248027.cos.ap-guangzhou.myqcloud.com/'

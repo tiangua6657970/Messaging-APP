@@ -1,34 +1,43 @@
 <script setup lang="ts">
-import useStore from "@src/store/store";
+import useStore from '@src/store/store'
 
 import {
   ArrowLeftOnRectangleIcon,
   ArrowPathIcon,
-  InformationCircleIcon,
-} from "@heroicons/vue/24/outline";
-import Dropdown from "@src/components/ui/navigation/Dropdown/Dropdown.vue";
-import DropdownLink from "@src/components/ui/navigation/Dropdown/DropdownLink.vue";
-import { RouterLink } from "vue-router";
+  InformationCircleIcon
+} from '@heroicons/vue/24/outline'
+import Dropdown from '@src/components/ui/navigation/Dropdown/Dropdown.vue'
+import DropdownLink from '@src/components/ui/navigation/Dropdown/DropdownLink.vue'
+import { RouterLink, useRouter } from 'vue-router'
+import useAuthStore from '@src/store/auth'
 
 const props = defineProps<{
-  showDropdown: boolean;
-  handleCloseDropdown: () => void;
-  handleShowDropdown: () => void;
-  id: string;
-}>();
+  showDropdown: boolean
+  handleCloseDropdown: () => void
+  handleShowDropdown: () => void
+  id: string
+}>()
 
-const store = useStore();
+const store = useStore()
+const authStore = useAuthStore()
+const router = useRouter()
 
 // (event) close dropdown menu when clicking outside
 const handleCloseOnClickOutside = (event: Event) => {
   if (
-    !["user-avatar", "profile-menu-button"].includes(
+    !['user-avatar', 'profile-menu-button'].includes(
       (event.target as HTMLButtonElement).id
     )
   ) {
-    props.handleCloseDropdown();
+    props.handleCloseDropdown()
   }
-};
+}
+
+function handleLogout() {
+  authStore.token = authStore.code = ''
+  authStore.userinfo = undefined
+  router.push({ path: '/access/sign-in' })
+}
 </script>
 
 <template>
@@ -41,7 +50,7 @@ const handleCloseOnClickOutside = (event: Event) => {
       :style="{
         'box-shadow': !store.settings.darkMode
           ? '0 2px 5px rgba(193, 202, 255, 0.5),2px 0 5px rgba(193, 202, 255, 0.5),-2px 0 5px rgba(193, 202, 255, 0.5),0 -2px 5px rgba(193, 202, 255, 0.5)'
-          : '0 2px 5px rgba(0, 70, 128, 0.5),2px 0 5px rgba(0, 70, 128, 0.5),-2px 0 5px rgba(0, 70, 128, 0.5),0 -2px 5px rgba(0, 70, 128, 0.5)',
+          : '0 2px 5px rgba(0, 70, 128, 0.5),2px 0 5px rgba(0, 70, 128, 0.5),-2px 0 5px rgba(0, 70, 128, 0.5),0 -2px 5px rgba(0, 70, 128, 0.5)'
       }"
       :aria-expanded="showDropdown"
       aria-controls="profile-menu"
@@ -64,7 +73,7 @@ const handleCloseOnClickOutside = (event: Event) => {
         'md:left-[40px]',
         'md:top-[auto]',
         'bottom-[50px]',
-        'left-[-77px]',
+        'left-[-77px]'
       ]"
       :handle-click-outside="handleCloseOnClickOutside"
       :close-dropdown="props.handleCloseDropdown"
@@ -97,13 +106,13 @@ const handleCloseOnClickOutside = (event: Event) => {
         :handle-click="props.handleCloseDropdown"
         color="danger"
       >
-        <RouterLink
-          to="/access/sign-in/"
+        <div
           class="w-full flex items-center justify-start"
+          @click="handleLogout"
         >
           <ArrowLeftOnRectangleIcon class="h-5 w-5 mr-3" />
           Logout
-        </RouterLink>
+        </div>
       </DropdownLink>
     </Dropdown>
   </div>

@@ -1,75 +1,81 @@
 <script setup lang="ts">
-import type { IConversation } from "@src/types";
-import type { Ref } from "vue";
-import { onMounted, ref, watch } from "vue";
+import type { IConversation } from '@src/types'
+import type { Ref } from 'vue'
+import { onMounted, ref, watch, watchEffect } from "vue";
 
-import useStore from "@src/store/store";
-import { getName } from "@src/utils";
+import useStore from '@src/store/store'
+import { getName } from '@src/utils'
 
-import { PencilSquareIcon } from "@heroicons/vue/24/outline";
-import ComposeModal from "@src/components/shared/modals/ComposeModal/ComposeModal.vue";
-import NoConversation from "@src/components/states/empty-states/NoConversation.vue";
-import Loading1 from "@src/components/states/loading-states/Loading1.vue";
-import IconButton from "@src/components/ui/inputs/IconButton.vue";
-import SearchInput from "@src/components/ui/inputs/SearchInput.vue";
-import FadeTransition from "@src/components/ui/transitions/FadeTransition.vue";
-import ArchivedButton from "@src/components/views/HomeView/Sidebar/Conversations/ArchivedButton.vue";
-import ConversationsList from "@src/components/views/HomeView/Sidebar/Conversations/ConversationsList.vue";
-import SidebarHeader from "@src/components/views/HomeView/Sidebar/SidebarHeader.vue";
+import { PencilSquareIcon } from '@heroicons/vue/24/outline'
+import ComposeModal from '@src/components/shared/modals/ComposeModal/ComposeModal.vue'
+import NoConversation from '@src/components/states/empty-states/NoConversation.vue'
+import Loading1 from '@src/components/states/loading-states/Loading1.vue'
+import IconButton from '@src/components/ui/inputs/IconButton.vue'
+import SearchInput from '@src/components/ui/inputs/SearchInput.vue'
+import FadeTransition from '@src/components/ui/transitions/FadeTransition.vue'
+import ArchivedButton from '@src/components/views/HomeView/Sidebar/Conversations/ArchivedButton.vue'
+import ConversationsList from '@src/components/views/HomeView/Sidebar/Conversations/ConversationsList.vue'
+import SidebarHeader from '@src/components/views/HomeView/Sidebar/SidebarHeader.vue'
+import useChatStore from '@src/store/chat'
+import { IChat } from '@src/typeV2'
 
-const store = useStore();
+const store = useStore()
+const chatStore = useChatStore()
 
-const keyword: Ref<string> = ref("");
+const keyword: Ref<string> = ref('')
 
-const composeOpen = ref(false);
+const composeOpen = ref(false)
 
 // determines whether the archive is open or not
-const openArchive = ref(false);
+const openArchive = ref(false)
 
 // the filtered list of conversations.
-const filteredConversations: Ref<IConversation[]> = ref(store.conversations);
+const filteredConversations: Ref<IConversation[]> = ref(store.conversations)
+const filteredChatList: Ref<IChat[]> = ref(chatStore.chatList)
 
 // filter the list of conversation based on search text.
-watch([keyword, openArchive], () => {
+
+watchEffect(() => {
+  console.log('------------call---------')
   if (openArchive.value) {
     // search conversations
-    filteredConversations.value =
-      store.archivedConversations?.filter((conversation) =>
-        getName(conversation)
+    filteredChatList.value =
+      chatStore.archivedConversations?.filter(conversation =>
+        conversation.show_name
           ?.toLowerCase()
           .includes(keyword.value.toLowerCase())
-      ) || [];
+      ) || []
   } else {
     // search archived conversations
-    filteredConversations.value =
-      store.conversations?.filter((conversation) =>
-        getName(conversation)
+    filteredChatList.value =
+      chatStore.chatList?.filter(conversation =>
+        conversation.show_name
           ?.toLowerCase()
           .includes(keyword.value.toLowerCase())
-      ) || [];
+      ) || []
   }
-});
+})
 
 // (event) switch between the rendered conversations.
-const handleConversationChange = (conversationId: number) => {
-  store.activeConversationId = conversationId;
-  store.conversationOpen = "open";
-};
+const handleConversationChange = (conversationId: string) => {
+  chatStore.activeConversationId = conversationId
+  chatStore.conversationOpen = 'open'
+}
 
 // (event) close the compose modal.
 const closeComposeModal = () => {
-  composeOpen.value = false;
-};
+  composeOpen.value = false
+}
 
 // if the active conversation is in the archive
 // then open the archive
 onMounted(() => {
-  let conversation = store.archivedConversations.find(
-    (conversation) => conversation.id === store.activeConversationId
-  );
+  let conversation = chatStore.chatList.find(
+    conversation => conversation.chat_id === chatStore.activeConversationId
+  )
 
-  if (conversation) openArchive.value = true;
-});
+  if (conversation) openArchive.value = true
+})
 </script>
 
 <template>
@@ -106,29 +112,30 @@ onMounted(() => {
       style="overflow-x: visible; overflow-y: scroll"
     >
       <Loading1
-        v-if="store.status === 'loading' || store.delayLoading"
+        v-if="chatStore.status === 'loading' || chatStore.delayLoading"
         v-for="item in 6"
       />
 
       <div v-else>
         <ArchivedButton
-          v-if="store.archivedConversations.length > 0"
+          v-if="chatStore.archivedConversations.length > 0"
           :open="openArchive"
           @click="openArchive = !openArchive"
         />
 
         <div
           v-if="
-            store.status === 'success' &&
-            !store.delayLoading &&
+            chatStore.status === 'success' &&
+            !chatStore.delayLoading &&
             filteredConversations.length > 0
           "
         >
           <FadeTransition>
             <component
               :is="ConversationsList"
+              :chat-list="filteredChatList"
               :filtered-conversations="filteredConversations"
-              :active-id="(store.activeConversationId as number)"
+              :active-id="chatStore.activeConversationId"
               :handle-conversation-change="handleConversationChange"
               :key="openArchive ? 'archive' : 'active'"
             />
@@ -136,7 +143,7 @@ onMounted(() => {
         </div>
 
         <div v-else>
-          <NoConversation v-if="store.archivedConversations.length === 0" />
+          <NoConversation v-if="chatStore.archivedConversations.length === 0" />
         </div>
       </div>
     </div>
