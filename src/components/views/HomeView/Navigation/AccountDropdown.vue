@@ -10,6 +10,8 @@ import Dropdown from '@src/components/ui/navigation/Dropdown/Dropdown.vue'
 import DropdownLink from '@src/components/ui/navigation/Dropdown/DropdownLink.vue'
 import { RouterLink, useRouter } from 'vue-router'
 import useAuthStore from '@src/store/auth'
+import useChatStore from '@src/store/chat'
+import useActionStore from '@src/store/action'
 
 const props = defineProps<{
   showDropdown: boolean
@@ -20,6 +22,8 @@ const props = defineProps<{
 
 const store = useStore()
 const authStore = useAuthStore()
+const chatStore = useChatStore()
+const actionStore = useActionStore()
 const router = useRouter()
 
 // (event) close dropdown menu when clicking outside
@@ -36,7 +40,12 @@ const handleCloseOnClickOutside = (event: Event) => {
 function handleLogout() {
   authStore.token = authStore.code = ''
   authStore.userinfo = undefined
+  chatStore.reset()
   router.push({ path: '/access/sign-in' })
+}
+
+function handleOpenProfile() {
+  actionStore.handleOpenContactInfo(chatStore.chatUserinfo.id)
 }
 </script>
 
@@ -58,7 +67,7 @@ function handleLogout() {
     >
       <div
         id="user-avatar"
-        :style="{ backgroundImage: `url(${store.user?.avatar})` }"
+        :style="{ backgroundImage: `url(${chatStore.chatUserinfo.avatar})` }"
         class="w-7 h-7 rounded-full bg-cover bg-center"
       ></div>
     </button>
@@ -80,25 +89,16 @@ function handleLogout() {
     >
       <DropdownLink
         label="Profile Information"
-        :handle-click="props.handleCloseDropdown"
+        :handle-click="() => {
+          handleOpenProfile()
+          props.handleCloseDropdown()
+        }"
         tabindex="0"
       >
         <InformationCircleIcon
           class="h-5 w-5 mr-3 text-black opacity-60 dark:text-white dark:opacity-70"
         />
-        Profile Information
-      </DropdownLink>
-
-      <DropdownLink
-        label="Password Change"
-        :handle-click="props.handleCloseDropdown"
-      >
-        <RouterLink to="/reset/" class="w-full flex items-center justify-start">
-          <ArrowPathIcon
-            class="h-5 w-5 mr-3 text-black opacity-60 dark:text-white dark:opacity-70"
-          />
-          Password Change
-        </RouterLink>
+        个人名片
       </DropdownLink>
 
       <DropdownLink
@@ -111,7 +111,7 @@ function handleLogout() {
           @click="handleLogout"
         >
           <ArrowLeftOnRectangleIcon class="h-5 w-5 mr-3" />
-          Logout
+          退出登录
         </div>
       </DropdownLink>
     </Dropdown>

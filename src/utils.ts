@@ -6,6 +6,7 @@ import type {
   IRecording,
 } from "@src/types";
 import useStore from "@src/store/store";
+import { File } from 'node:buffer'
 
 /**
  * combine first name and last name of a contact.
@@ -68,7 +69,7 @@ export const getName = (conversation: IConversation) => {
 /**
  * trim a string when it reaches a certain length and adds three dots
  * at the end.
- * @param text
+ * @param message
  * @param maxLength
  * @returns A string that is trimmed according the length provided
  */
@@ -94,6 +95,17 @@ export const shorten = (message: IMessage | string, maxLength: number = 23) => {
 
   return "";
 };
+
+export function shortenV2(text: string, maxLength: number) {
+  let trimmedString = text;
+  if (text.length > maxLength) {
+    // trim the string to the maximum length.
+    trimmedString = trimmedString.slice(0, maxLength);
+    // add three dots to indicate that there is more to the message.
+    trimmedString += "...";
+  }
+  return trimmedString;
+}
 
 /**
  * test if the message contains attachments
@@ -197,3 +209,4 @@ export const unicodeToEmoji = (unicode: string) => {
     .map((hex) => String.fromCodePoint(hex))
     .join("");
 };
+

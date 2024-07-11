@@ -24,24 +24,24 @@ const store = useStore();
     aria-controls="appearance-settings-collapse"
     @click="props.handleToggle()"
   >
-    <Typography variant="heading-2" class="mb-4"> Appearance </Typography>
-    <Typography variant="body-2"> Customize the look and feel </Typography>
+    <Typography variant="heading-2" class="mb-4"> 外观 </Typography>
+    <Typography variant="body-2"> 自定义外观和体验 </Typography>
   </AccordionButton>
 
   <Collapse id="appearance-settings-collapse" :collapsed="props.collapsed">
     <SettingsSwitch
-      title="Dark Mode"
-      description="Apply a theme with dark colors"
+      title="暗黑模式"
+      description="应用带有深色色调的主题"
       :value="!!store.settings.darkMode"
       :handle-toggle-switch="(value) => (store.settings.darkMode = value)"
       class="mb-7"
     />
-    <SettingsSwitch
-      title="Bordered Theme"
-      description="Apply borders to the theme"
-      :value="!!store.settings.borderedTheme"
-      :handle-toggle-switch="(value) => (store.settings.borderedTheme = value)"
-      class="mb-7"
-    />
+    <!--<SettingsSwitch-->
+    <!--  title="带边框的主题"-->
+    <!--  description="在主题上应用边框"-->
+    <!--  :value="!!store.settings.borderedTheme"-->
+    <!--  :handle-toggle-switch="(value) => (store.settings.borderedTheme = value)"-->
+    <!--  class="mb-7"-->
+    <!--/>-->
   </Collapse>
 </template>

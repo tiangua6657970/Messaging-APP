@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import Button from "@src/components/ui/inputs/Button.vue";
-import DropFileUpload from "@src/components/ui/inputs/DropFileUpload.vue";
-import TextInput from "@src/components/ui/inputs/TextInput.vue";
+import Button from '@src/components/ui/inputs/Button.vue'
+import DropFileUpload from '@src/components/ui/inputs/DropFileUpload.vue'
+import TextInput from '@src/components/ui/inputs/TextInput.vue'
+import useComposeStore from '@src/store/compose'
+
+function handleChange(file: any) {
+  console.log('file', file)
+}
+
+const composeStore = useComposeStore()
 </script>
 
 <template>
@@ -9,12 +16,19 @@ import TextInput from "@src/components/ui/inputs/TextInput.vue";
     <!--inputs-->
     <div class="mb-5">
       <div class="mb-5">
-        <TextInput type="text" placeholder="Group name" label="Name" />
+        <TextInput
+          type="text"
+          placeholder="输入群名称"
+          label="名称"
+          :value="composeStore.name"
+          @value-changed="$event => (composeStore.name = $event)"
+        />
       </div>
 
-      <div>
-        <DropFileUpload label="Avatar" />
-      </div>
+      <!-- TODO: DropFileUpload-->
+      <!--<div>-->
+      <!--  <DropFileUpload label="Avatar" @value-changed="handleChange" />-->
+      <!--</div>-->
     </div>
 
     <!--next button-->
@@ -22,14 +36,14 @@ import TextInput from "@src/components/ui/inputs/TextInput.vue";
       <div class="grow"></div>
       <Button
         @click="
-          $emit('active-page-change', {
+          composeStore.changeActiveTab({
             tabName: 'group-members',
-            animationName: 'slide-left',
+            animationName: 'slide-left'
           })
         "
         class="px-5 bg-indigo-400 hover:bg-indigo-500 active:bg-indigo-500"
       >
-        Next
+        下一步
       </Button>
     </div>
   </div>

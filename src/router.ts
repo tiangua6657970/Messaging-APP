@@ -1,27 +1,31 @@
-import { createRouter, createWebHistory, RouteLocationNormalized } from "vue-router";
-import AccessView from "@src/components/views/AccessView/AccessView.vue";
-import HomeView from "@src/components/views/HomeView/HomeView.vue";
-import PasswordResetView from "@src/components/views/PasswordResetView/PasswordResetView.vue";
-import { __TOKEN__ } from "@src/service/base";
-import useAuthStore from "@src/store/auth";
+import {
+  createRouter,
+  createWebHistory,
+  RouteLocationNormalized
+} from 'vue-router'
+import AccessView from '@src/components/views/AccessView/AccessView.vue'
+import HomeView from '@src/components/views/HomeView/HomeView.vue'
+import PasswordResetView from '@src/components/views/PasswordResetView/PasswordResetView.vue'
+import useAuthStore from '@src/store/auth'
+import SelectInviteCodeView from '@src/components/views/SelectInviteCodeView/SelectInviteCodeView.vue'
 
 const routes = [
   {
-    path: "/",
-    name: "Home",
-    component: HomeView,
+    path: '/',
+    name: 'Home',
+    component: HomeView
   },
   {
-    path: "/access/:method/",
-    name: "Access",
-    component: AccessView,
+    path: '/access/:method/',
+    name: 'Access',
+    component: AccessView
   },
   {
-    path: "/reset/",
-    name: "Password Reset",
-    component: PasswordResetView,
-  },
-];
+    path: '/reset/',
+    name: 'Password Reset',
+    component: PasswordResetView
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,7 +35,7 @@ const router = createRouter({
 router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
   const authStore = useAuthStore()
   if (to.path !== '/access/sign-in/') {
-    if (!authStore.token) {
+    if (!authStore.token || !authStore.code) {
       return {
         path: '/access/sign-in/'
       }
@@ -39,7 +43,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormali
   }
 
   if (to.path === '/access/sign-in/') {
-    if (authStore.token) {
+    if (authStore.token && authStore.code) {
       return { name: 'Home' }
     }
   }

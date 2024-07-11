@@ -1,40 +1,75 @@
 <script setup lang="ts">
-import useStore from "@src/store/store";
+import NoContacts from '@src/components/states/empty-states/NoContacts.vue'
+import Loading1 from '@src/components/states/loading-states/Loading1.vue'
+import SearchInput from '@src/components/ui/inputs/SearchInput.vue'
+import ScrollBox from '@src/components/ui/utils/ScrollBox.vue'
+import useChatStore from '@src/store/chat'
+import { computed, Ref, ref, watch } from 'vue'
+import { IFriend } from '@src/typeV2'
+import ContactItemV2 from '@src/components/shared/blocks/ContactItemV2.vue'
+import { debounceV2 } from '@src/assets/utils'
 
-import NoContacts from "@src/components/states/empty-states/NoContacts.vue";
-import Loading1 from "@src/components/states/loading-states/Loading1.vue";
-import SearchInput from "@src/components/ui/inputs/SearchInput.vue";
-import ContactItem from "@src/components/shared/blocks/ContactItem.vue";
-import ScrollBox from "@src/components/ui/utils/ScrollBox.vue";
+const chatStore = useChatStore()
+const contactList = computed(() => {
+  return chatStore.contactGroups.flatMap(item => item.data)
+})
+const searchText: Ref<string> = ref('')
+const filteredContactList = ref(contactList.value.slice())
 
-const store = useStore();
+async function handleSelect(contact: IFriend) {
+  const { err, data } = await chatStore.getListId({ user_id: contact.user_id })
+  if (err) {
+    return
+  }
+  chatStore.activeConversationId = data.list_id
+  chatStore.conversationOpen = 'open'
+}
+
+const debouncedFunction = debounceV2(() => {
+  const searchTextVal = searchText.value
+  if (!searchTextVal) {
+    filteredContactList.value = contactList.value.slice()
+    return
+  }
+  filteredContactList.value = contactList.value.filter(item => {
+    return (
+      item.name.toLowerCase().includes(searchTextVal.toLowerCase()) ||
+      item.user_id === Number(searchTextVal)
+    )
+  })
+}, 300)
+watch([searchText, contactList], () => {
+  debouncedFunction()
+})
 </script>
 
 <template>
   <div class="pb-6">
     <!--search-->
     <div class="mx-5 mb-5">
-      <SearchInput />
+      <SearchInput v-model="searchText" />
     </div>
 
     <!--contacts-->
     <ScrollBox class="overflow-y-scroll max-h-[200px]">
       <Loading1
-        v-if="store.status === 'loading' || store.delayLoading"
+        v-if="chatStore.status === 'loading' || chatStore.delayLoading"
         v-for="item in 3"
       />
-
-      <ContactItem
+      <template
         v-else-if="
-          store.status === 'success' &&
-          !store.delayLoading &&
-          store.user &&
-          store.user.contacts.length > 0
+          chatStore.status === 'success' &&
+          !chatStore.delayLoading &&
+          contactList.length > 0
         "
-        v-for="(contact, index) in store.user.contacts"
-        :key="index"
-        :contact="contact"
-      />
+      >
+        <ContactItemV2
+          v-for="(contact, index) in filteredContactList"
+          :key="index"
+          :contact="contact"
+          @contact-selected="handleSelect"
+        />
+      </template>
 
       <NoContacts vertical v-else />
     </ScrollBox>

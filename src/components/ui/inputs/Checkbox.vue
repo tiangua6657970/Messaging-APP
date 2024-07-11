@@ -3,6 +3,7 @@ import { CheckIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps<{
   value: boolean;
+  disabled?: boolean
   inputId?: string;
   handleCheck?: () => void;
 }>();
@@ -21,6 +22,7 @@ const props = defineProps<{
         }
       "
       :checked="props.value"
+      :disabled="disabled"
       class="h-5 w-5 appearance-none relative cursor-pointer outline-none rounded-[5px] border border-indigo-400 transition-all duration-300"
     />
     <CheckIcon

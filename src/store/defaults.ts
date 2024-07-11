@@ -4,7 +4,7 @@ export const defaultSettings = [
     readReceipt: false,
     joiningGroups: false,
     privateMessages: false,
-    darkMode: false,
+    darkMode: true,
     borderedTheme: false,
     allowNotifications: false,
     keepNotifications: false,

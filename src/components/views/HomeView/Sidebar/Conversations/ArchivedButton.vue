@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ArchiveBoxIcon, XMarkIcon } from "@heroicons/vue/24/outline";
-import Typography from "@src/components/ui/data-display/Typography.vue";
-import useStore from "@src/store/store";
+import { ArchiveBoxIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import Typography from '@src/components/ui/data-display/Typography.vue'
+import useChatStore from '@src/store/chat'
+import { computed } from 'vue'
 
 const props = defineProps<{
-  open: boolean;
-}>();
+  open: boolean
+}>()
 
-const store = useStore();
+const chatStore = useChatStore()
+const length = computed(() => chatStore.archivedConversationIds.length)
 </script>
 
 <template>
@@ -25,7 +27,7 @@ const store = useStore();
               'dark:bg-red-400',
               'dark:hover:bg-red-300',
               'dark:focus:bg-red-300',
-              'dark:active:bg-red-300',
+              'dark:active:bg-red-300'
             ]
           : [
               'focus:bg-indigo-50',
@@ -33,7 +35,7 @@ const store = useStore();
               'dark:focus:bg-gray-600',
               'dark:hover:bg-gray-600',
               ' hover:bg-indigo-50',
-              'active:bg-indigo-100',
+              'active:bg-indigo-100'
             ]
       "
       tabindex="0"
@@ -62,7 +64,7 @@ const store = useStore();
                   'text-white',
                   'dark:text-white',
                   'group-hover:text-white',
-                  'group-focus:text-white',
+                  'group-focus:text-white'
                 ]
               : []
           "
@@ -73,7 +75,7 @@ const store = useStore();
           no-color
           class="text-white dark:text-white group-hover:text-white group-focus:text-white"
         >
-          Close Archive
+          关闭存档
         </Typography>
       </div>
 
@@ -82,9 +84,7 @@ const store = useStore();
           <!--title-->
           <div class="flex items-start">
             <div class="grow mb-4 text-start">
-              <Typography variant="heading-2">
-                Archived Conversations
-              </Typography>
+              <Typography variant="heading-2"> 已存档对话 </Typography>
             </div>
           </div>
         </div>
@@ -92,8 +92,7 @@ const store = useStore();
         <div>
           <!--number of conversations -->
           <Typography variant="body-2" class="flex justify-start items-center">
-            {{ store.archivedConversations.length }}
-            conversations
+            {{ length }} 个 对话
           </Typography>
         </div>
       </div>

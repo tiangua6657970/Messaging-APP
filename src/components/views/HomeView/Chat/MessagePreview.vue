@@ -1,17 +1,40 @@
 <script setup lang="ts">
-import type { IAttachment, IMessage, IUser } from "@src/types";
+import { shorten, shortenV2 } from '@src/utils'
 
-import useStore from "@src/store/store";
-import { getFullName, hasAttachments, shorten } from "@src/utils";
+import Typography from '@src/components/ui/data-display/Typography.vue'
+import { IMessageV2 } from '@src/typeV2'
+import { computed } from 'vue'
 
-import Typography from "@src/components/ui/data-display/Typography.vue";
+const props = withDefaults(
+  defineProps<{
+    message: IMessageV2
+    self?: boolean
+    messageKey?: 'text' | 'answerMsgText'
+  }>(),
+  {
+    messageKey: 'text'
+  }
+)
 
-const props = defineProps<{
-  message: IMessage;
-  self?: boolean;
-}>();
+// TODO: MessagePreview
+const tips = computed(() => {
+  if (props.messageKey === 'answerMsgText') {
+    return '回复：'
+  } else {
+    return props.message.user_info.nickname
+  }
+})
 
-const store = useStore();
+function handleClick() {
+  const res = document.querySelector(
+    `div[data-message-id="${
+      props.messageKey === 'text'
+        ? props.message.id
+        : props.message.content.answerMsgId
+    }"]`
+  )
+  res?.scrollIntoView({ behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -20,7 +43,8 @@ const store = useStore();
     class="border-l-2 pl-3 cursor-pointer outline-none border-opacity-50 duration-200"
     :class="['border-gray-900', 'dark:border-white', 'dark:border-opacity-50']"
     tabindex="0"
-    :aria-label="'reply to: ' + getFullName(props.message.sender)"
+    :aria-label="'reply to: ' + props.message.user_info.nickname"
+    @click="handleClick"
   >
     <!--name-->
     <p
@@ -29,42 +53,19 @@ const store = useStore();
         'text-black',
         'opacity-60',
         'dark:text-white',
-        'dark:opacity-70',
+        'dark:opacity-70'
       ]"
     >
-      {{
-        store.user && message.sender.id !== store.user.id
-          ? getFullName(props.message.sender)
-          : "You"
-      }}
+      {{ tips }}
     </p>
 
     <!--content-->
     <Typography
-      v-if="props.message.type !== 'recording' && props.message.content"
       variant="body-2"
       :no-color="true"
       class="text-black opacity-50 dark:text-white dark:opacity-70"
     >
-      {{ shorten(props.message, 60) }}
-    </Typography>
-
-    <!--attachments title-->
-    <Typography
-      v-else-if="hasAttachments(props.message)"
-      variant="body-2"
-      class="text-black opacity-50 dark:text-white dark:opacity-70"
-    >
-      {{ (props.message?.attachments as IAttachment[])[0].name }}
-    </Typography>
-
-    <!--recording title-->
-    <Typography
-      v-else-if="props.message.type === 'recording'"
-      variant="body-2"
-      class="text-black opacity-50 dark:text-white dark:opacity-70"
-    >
-      recording 23s
+      {{ shortenV2(props.message.content[messageKey], 60) }}
     </Typography>
   </div>
 </template>

@@ -17,12 +17,11 @@ import blurPath from "@src/assets/images/blur.png";
         :style="{ 'background-image': `url(${blurPath})` }"
       >
         <Typography variant="display" class="mb-5 text-white" no-color
-          >Blazingly fast messaging platform for the
-          <span class="text-gradient">web.</span>
+          >极速的网络聊天平台。
+          <span class="text-gradient">趴窝.</span>
         </Typography>
         <Typography variant="body-3" class="text-white" no-color
-          >Avian saves all the data in user’s devices and uses a cryptographic
-          protocols to sync the data across multiple browsers and devices.
+          >趴窝 将所有数据保存在用户设备中，并使用加密协议在多个浏览器和设备间同步数据。
         </Typography>
       </div>
     </div>

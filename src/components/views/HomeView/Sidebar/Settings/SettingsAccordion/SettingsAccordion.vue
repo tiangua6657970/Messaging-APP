@@ -44,17 +44,17 @@ const handleToggle = (name: accordionItems) => {
       :collapsed="accordionState['account-settings']"
       :handleToggle="() => handleToggle(accordionItems.accountSettings)"
     />
-    <PrivacySettings
-      :collapsed="accordionState['privacy-settings']"
-      :handleToggle="() => handleToggle(accordionItems.privacySettings)"
-    />
+    <!--<PrivacySettings-->
+    <!--  :collapsed="accordionState['privacy-settings']"-->
+    <!--  :handleToggle="() => handleToggle(accordionItems.privacySettings)"-->
+    <!--/>-->
     <ApperanceSettings
       :collapsed="accordionState['appearance-settings']"
       :handleToggle="() => handleToggle(accordionItems.appearanceSettings)"
     />
-    <NotificationsSettings
-      :collapsed="accordionState['notifications-settings']"
-      :handleToggle="() => handleToggle(accordionItems.notificationsSettings)"
-    />
+    <!--<NotificationsSettings-->
+    <!--  :collapsed="accordionState['notifications-settings']"-->
+    <!--  :handleToggle="() => handleToggle(accordionItems.notificationsSettings)"-->
+    <!--/>-->
   </div>
 </template>

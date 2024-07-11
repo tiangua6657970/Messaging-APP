@@ -6,7 +6,7 @@ import SettingsAccordion from "@src/components/views/HomeView/Sidebar/Settings/S
 <template>
   <div>
     <SidebarHeader>
-      <template v-slot:title>Settings</template>
+      <template v-slot:title>设置</template>
     </SidebarHeader>
 
     <div

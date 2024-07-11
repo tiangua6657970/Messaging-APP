@@ -1,75 +1,120 @@
 <script setup lang="ts">
-import type { IConversation, IMessage } from "@src/types";
-import { inject } from "vue";
-
-import useStore from "@src/store/store";
-import { getConversationIndex } from "@src/utils";
+import { computed } from 'vue'
 
 import {
   ArrowUturnLeftIcon,
   BookmarkIcon,
   BookmarkSquareIcon,
-  TrashIcon,
   CheckCircleIcon,
-  XCircleIcon,
-} from "@heroicons/vue/24/outline";
-import Dropdown from "@src/components/ui/navigation/Dropdown/Dropdown.vue";
-import DropdownLink from "@src/components/ui/navigation/Dropdown/DropdownLink.vue";
+  CubeIcon,
+  ShareIcon,
+  TrashIcon,
+  XCircleIcon
+} from '@heroicons/vue/24/outline'
+import Dropdown from '@src/components/ui/navigation/Dropdown/Dropdown.vue'
+import DropdownLink from '@src/components/ui/navigation/Dropdown/DropdownLink.vue'
+import { IMessageV2 } from '@src/typeV2'
+import useActionStore from '@src/store/action'
+import useChatStore from '@src/store/chat'
+import { doCopyImg2Clipboard } from '@src/assets/utils'
 
 const props = defineProps<{
-  message: IMessage;
-  show: boolean;
-  left: number;
-  top: number;
-  selected: boolean;
-  handleCloseContextMenu: () => void;
-  handleSelectMessage: (messageId: number) => void;
-  handleDeselectMessage: (messageId: number) => void;
-}>();
+  message: IMessageV2
+  show: boolean
+  left: number
+  top: number
+  selected: boolean
+  handleCloseContextMenu: () => void
+  handleSelectMessage: (message: IMessageV2) => void
+  handleDeselectMessage: (message: IMessageV2) => void
+}>()
 
-const store = useStore();
+interface Action {
+  type: string
+  text: string
+}
 
-const activeConversation = <IConversation>inject("activeConversation");
+const actionStore = useActionStore()
+const chatStore = useChatStore()
 
-// (event) pin message to conversation
-const handlePinMessage = () => {
-  props.handleCloseContextMenu();
-
-  if (activeConversation) {
-    // get the active conversation index in the state store
-    let activeConversationIndex = getConversationIndex(activeConversation.id);
-
-    if (
-      store.conversations &&
-      activeConversationIndex !== undefined &&
-      activeConversationIndex !== null
-    ) {
-      // update the conversation in the state store
-      store.conversations[activeConversationIndex].pinnedMessage =
-        props.message;
-      store.conversations[activeConversationIndex].pinnedMessageHidden = false;
-    }
+const actionList = computed(() => {
+  switch (props.message.messageType) {
+    case 'text':
+      return [
+        { type: 'reply', text: '回复' },
+        { type: 'copy', text: '拷贝' },
+        {
+          type: 'forward',
+          text: '转发'
+        },
+        // { type: 'favorite', text: 'Favorite' },
+        { type: 'pin', text: 'Pin' }
+      ]
+    case 'voice':
+      return [
+        {
+          type: 'forward',
+          text: '转发'
+        }
+      ]
+    case 'image':
+      return [
+        {
+          type: 'forward',
+          text: '转发'
+        },
+        { type: 'copy', text: '拷贝' }
+        // { type: 'favorite', text: 'Favorite' }
+      ]
+    case 'video':
+      return [
+        {
+          type: 'forward',
+          text: '转发'
+        }
+        // { type: 'favorite', text: 'Favorite' }
+      ]
+    case 'nameCard':
+      return [
+        {
+          type: 'forward',
+          text: '转发'
+        }
+      ]
   }
-};
+})
 
-// (event) select the reply message.
-const handleReplyToMessage = () => {
-  props.handleCloseContextMenu();
+function handleReply() {
+  actionStore.setReply(props.message)
+  props.handleCloseContextMenu()
+}
 
-  if (activeConversation) {
-    // get the active conversation index in the state store
-    let activeConversationIndex = getConversationIndex(activeConversation.id);
-
-    if (
-      store.conversations &&
-      activeConversationIndex !== undefined &&
-      activeConversationIndex !== null
-    ) {
-      // update the conversation in the state store
-      store.conversations[activeConversationIndex].replyMessage = props.message;
-    }
+function handleCopy() {
+  if (props.message.messageType === 'image') {
+    doCopyImg2Clipboard(props.message.content.fullURL)
+    // doCopyImgBase64Clipboard(props.message.content.fullURL)
+  } else {
+    actionStore.handleCopy(props.message)
   }
-};
+  props.handleCloseContextMenu()
+}
+
+function handlePin() {
+  actionStore.setPin(props.message)
+  props.handleCloseContextMenu()
+}
+
+async function handleWithdrawMessage() {
+  await chatStore.withdrawMessage(props.message.id)
+}
+
+function handleForward() {
+  actionStore.forwardModalOpen = true
+  actionStore.activeMessageItem = props.message
+  props.handleCloseContextMenu()
+}
+
+function handleFavorite() {}
 </script>
 
 <template>
@@ -80,54 +125,80 @@ const handleReplyToMessage = () => {
     :show="show"
     :coordinates="{
       left: props.left + 'px',
-      top: props.top + 'px',
+      top: props.top + 'px'
     }"
     :position="['top-0']"
   >
-    <DropdownLink :handle-click="handleReplyToMessage">
-      <ArrowUturnLeftIcon class="h-5 w-5 mr-3" />
-      Reply
-    </DropdownLink>
+    <template
+      v-for="item in actionList"
+      :key="item.type"
+      @click="handleActionClick(item)"
+    >
+      <DropdownLink v-if="item.type === 'reply'" :handle-click="handleReply">
+        <ArrowUturnLeftIcon class="h-5 w-5 mr-3" />
+        {{ item.text }}
+      </DropdownLink>
+      <DropdownLink v-else-if="item.type === 'copy'" :handle-click="handleCopy">
+        <BookmarkIcon class="h-5 w-5 mr-3" />
+        {{ item.text }}
+      </DropdownLink>
+      <DropdownLink v-else-if="item.type === 'pin'" :handle-click="handlePin">
+        <BookmarkSquareIcon class="h-5 w-5 mr-3" />
+        {{ item.text }}
+      </DropdownLink>
+      <DropdownLink
+        v-else-if="item.type === 'forward'"
+        :handle-click="handleForward"
+      >
+        <ShareIcon class="h-5 w-5 mr-3" />
 
-    <DropdownLink :handle-click="handleCloseContextMenu">
-      <BookmarkIcon class="h-5 w-5 mr-3" />
-      Copy
-    </DropdownLink>
+        {{ item.text }}
+      </DropdownLink>
+      <DropdownLink
+        v-else-if="item.type === 'favorite'"
+        :handle-click="handleFavorite"
+      >
+        <CubeIcon class="h-5 w-5 mr-3" />
+        {{ item.text }}
+      </DropdownLink>
+    </template>
+    <!-- TODO： 选择信息 -->
+    <!--<DropdownLink-->
+    <!--  v-if="props.selected"-->
+    <!--  :handle-click="-->
+    <!--    () => {-->
+    <!--      handleCloseContextMenu()-->
+    <!--      props.handleDeselectMessage(message)-->
+    <!--    }-->
+    <!--  "-->
+    <!--&gt;-->
+    <!--  <XCircleIcon class="h-5 w-5 mr-3" />-->
+    <!--  取消选择-->
+    <!--</DropdownLink>-->
 
-    <DropdownLink :handle-click="handlePinMessage">
-      <BookmarkSquareIcon class="h-5 w-5 mr-3" />
-      Pin
-    </DropdownLink>
+    <!--<DropdownLink-->
+    <!--  v-else-->
+    <!--  :handle-click="-->
+    <!--    () => {-->
+    <!--      handleCloseContextMenu()-->
+    <!--      props.handleSelectMessage(message)-->
+    <!--    }-->
+    <!--  "-->
+    <!--&gt;-->
+    <!--  <CheckCircleIcon class="h-5 w-5 mr-3" />-->
+    <!--  选择-->
+    <!--</DropdownLink>-->
 
     <DropdownLink
-      v-if="props.selected"
       :handle-click="
         () => {
-          handleCloseContextMenu();
-          props.handleDeselectMessage(props.message.id);
+          handleWithdrawMessage()
+          handleCloseContextMenu
         }
       "
     >
-      <XCircleIcon class="h-5 w-5 mr-3" />
-      Deselect
-    </DropdownLink>
-
-    <DropdownLink
-      v-else
-      :handle-click="
-        () => {
-          handleCloseContextMenu();
-          props.handleSelectMessage(props.message.id);
-        }
-      "
-    >
-      <CheckCircleIcon class="h-5 w-5 mr-3" />
-      Select
-    </DropdownLink>
-
-    <DropdownLink :handle-click="handleCloseContextMenu" color="danger">
       <TrashIcon class="h-5 w-5 mr-3" />
-      Delete Message
+      撤回
     </DropdownLink>
   </Dropdown>
 </template>

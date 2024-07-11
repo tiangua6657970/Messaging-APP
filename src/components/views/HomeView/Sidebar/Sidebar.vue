@@ -1,33 +1,30 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue'
 
-import useStore from "@src/store/store";
+import FadeTransition from '@src/components/ui/transitions/FadeTransition.vue'
+import Calls from '@src/components/views/HomeView/Sidebar/Calls/Calls.vue'
+import Contacts from '@src/components/views/HomeView/Sidebar/Contacts/Contacts.vue'
+import Conversations from '@src/components/views/HomeView/Sidebar/Conversations/Conversations.vue'
+import Notifications from '@src/components/views/HomeView/Sidebar/Notifications/Notifications.vue'
+import Settings from '@src/components/views/HomeView/Sidebar/Settings/Settings.vue'
+import useChatStore from '@src/store/chat'
 
-import FadeTransition from "@src/components/ui/transitions/FadeTransition.vue";
-import Calls from "@src/components/views/HomeView/Sidebar/Calls/Calls.vue";
-import Contacts from "@src/components/views/HomeView/Sidebar/Contacts/Contacts.vue";
-import Conversations from "@src/components/views/HomeView/Sidebar/Conversations/Conversations.vue";
-import Notifications from "@src/components/views/HomeView/Sidebar/Notifications/Notifications.vue";
-import Settings from "@src/components/views/HomeView/Sidebar/Settings/Settings.vue";
-import useChatStore from "@src/store/chat";
-
-const store = useStore();
 const chatStore = useChatStore()
 
 // the selected sidebar component (e.g message/notifications/settings)
 const ActiveComponent = computed(() => {
-  if (chatStore.activeSidebarComponent === "messages") {
-    return Conversations;
-  } else if (chatStore.activeSidebarComponent === "contacts") {
-    return Contacts;
-  } else if (chatStore.activeSidebarComponent === "notifications") {
-    return Notifications;
-  } else if (chatStore.activeSidebarComponent === "phone") {
-    return Calls;
-  } else if (chatStore.activeSidebarComponent === "settings") {
-    return Settings;
+  if (chatStore.activeSidebarComponent === 'messages') {
+    return Conversations
+  } else if (chatStore.activeSidebarComponent === 'contacts') {
+    return Contacts
+  } else if (chatStore.activeSidebarComponent === 'notifications') {
+    return Notifications
+  } else if (chatStore.activeSidebarComponent === 'phone') {
+    return Calls
+  } else if (chatStore.activeSidebarComponent === 'settings') {
+    return Settings
   }
-});
+})
 </script>
 
 <template>

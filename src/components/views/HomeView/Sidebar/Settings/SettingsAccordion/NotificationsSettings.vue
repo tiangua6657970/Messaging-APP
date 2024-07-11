@@ -24,14 +24,14 @@ const store = useStore();
     aria-controls="notifications-settings-collapse"
     @click="props.handleToggle()"
   >
-    <Typography variant="heading-2" class="mb-4"> Notifications </Typography>
-    <Typography variant="body-2"> Customize notifications </Typography>
+    <Typography variant="heading-2" class="mb-4"> 通知 </Typography>
+    <Typography variant="body-2"> 自定义通知 </Typography>
   </AccordionButton>
 
   <Collapse id="notifications-settings-collapse" :collapsed="props.collapsed">
     <SettingsSwitch
-      title="Allow Notifications"
-      description="Receive Notifications from avian"
+      title="允许通知"
+      description="接收来自 官方群 的通知"
       :value="!!store.settings.allowNotifications"
       :handle-toggle-switch="
         (value) => (store.settings.allowNotifications = value)
@@ -39,8 +39,8 @@ const store = useStore();
       class="mb-7"
     />
     <SettingsSwitch
-      title="Keep Notifications"
-      description="Save notifications after they are received"
+      title="保持通知"
+      description="接收通知后保存"
       :value="!!store.settings.keepNotifications"
       :handle-toggle-switch="
         (value) => (store.settings.keepNotifications = value)

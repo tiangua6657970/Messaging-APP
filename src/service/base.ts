@@ -43,10 +43,11 @@ export const showMessage = (status: number | string): string => {
   return `${message}，请检查网络或联系管理员！`
 }
 
-export const __TOKEN__ = '__token__'
 const serviceConfig = {
   timeout: 3000,
-  baseURL: 'https://b.0p0.cn/api/v1/'
+  baseURL: 'https://b.0p0.cn/api/v1/',
+  // baseURL: 'http://btest.0p0.cn/api/v1/'
+  // baseURL: '/api/v1/'
 }
 
 axios.defaults.timeout = serviceConfig.timeout
@@ -67,7 +68,7 @@ axios.interceptors.response.use(
     return response
   },
   error => {
-    console.log(error)
+    return error.response
   }
 )
 
@@ -75,29 +76,28 @@ export function request<R>(
   url: string,
   params: any = {},
   requestMethod: Method = 'GET',
-  config: AxiosRequestConfig = {}
+  config: AxiosRequestConfig = {
+    headers: {
+      'Accept-Language': 'zh-CN,zh;q=0.9'
+    }
+  }
 ) {
   return axios
-    .request<R & { code: number, msg: string, data: any }>({
+    .request<R & { code: number, msg: string, data: any, err: number }>({
       url,
       method: requestMethod,
       [requestMethod === 'GET' ? 'params' : 'data']: params,
       ...config
     })
     .then(res => {
-      console.log('res----------', res)
       if (res.status !== 200) {
-        showMessage(res.status)
-        return { err: 1, data: undefined } as { err: number; data: R }
+        return { err: 1, data: undefined, msg: res.data.msg } as { err: number; msg: string; data: R }
       }
-      return { err: undefined, data: res.data.data } as unknown as {
-        err: number
-        data: R
-      }
+      return { err: res.data.err, msg: res.data.msg, data: res.data.data } as { err: number; msg: string; data: R }
     })
     .catch(err => {
       console.log('[service err] :', err)
-      return { err: 1, data: undefined } as { err: number; data: R }
+      return { err: 1, data: undefined } as { err: number; msg: string; data: R }
     })
 }
 

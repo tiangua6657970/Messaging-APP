@@ -1,27 +1,51 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed, watch } from 'vue'
 
-import useStore from "@src/store/store";
+import Chat from '@src/components/views/HomeView/Chat/Chat.vue'
+import Navigation from '@src/components/views/HomeView/Navigation/Navigation.vue'
+import Sidebar from '@src/components/views/HomeView/Sidebar/Sidebar.vue'
+import NoChatSelected from '@src/components/states/empty-states/NoChatSelected.vue'
+import Loading3 from '@src/components/states/loading-states/Loading3.vue'
+import FadeTransition from '@src/components/ui/transitions/FadeTransition.vue'
+import useChatStore from '@src/store/chat'
+import ConversationInfoModal from '@src/components/shared/modals/ConversationInfoModal/ConversationInfoModal.vue'
+import useActionStore from '@src/store/action'
+import ConversationInfoModalV2 from '@src/components/shared/modals/ConversationInfoModal/ConversationInfoModalV2.vue'
+import { useRouter } from 'vue-router'
+import useAuthStore from '@src/store/auth'
 
-import Chat from "@src/components/views/HomeView/Chat/Chat.vue";
-import Navigation from "@src/components/views/HomeView/Navigation/Navigation.vue";
-import Sidebar from "@src/components/views/HomeView/Sidebar/Sidebar.vue";
-import NoChatSelected from "@src/components/states/empty-states/NoChatSelected.vue";
-import Loading3 from "@src/components/states/loading-states/Loading3.vue";
-import FadeTransition from "@src/components/ui/transitions/FadeTransition.vue";
-
-const store = useStore();
-
+const chatStore = useChatStore()
+const actionStore = useActionStore()
+const authStore = useAuthStore()
+const router = useRouter()
 // the active chat component or loading component.
 const activeChatComponent = computed(() => {
-  if (store.status === "loading" || store.delayLoading) {
-    return Loading3;
-  } else if (store.activeConversationId) {
-    return Chat;
+  if (chatStore.status === 'loading' || chatStore.delayLoading) {
+    return Loading3
+  } else if (chatStore.activeConversationId) {
+    return Chat
   } else {
-    return NoChatSelected;
+    return NoChatSelected
   }
-});
+})
+
+watch(
+  () => chatStore.codeError,
+  newVal => {
+    if (newVal) {
+      authStore.code = ''
+      router.push('/access/sign-in/')
+      chatStore.codeError = false
+    }
+  }
+)
+
+watch(
+  () => chatStore.currentChatInfo,
+  newVal => {
+    chatStore.refreshChatList()
+  }
+)
 </script>
 
 <template>
@@ -40,7 +64,7 @@ const activeChatComponent = computed(() => {
         id="mainContent"
         class="xs:absolute xs:z-10 md:static grow h-full xs:w-full md:w-fit scrollbar-hidden bg-white dark:bg-gray-800 transition-all duration-500"
         :class="
-          store.conversationOpen === 'open'
+          chatStore.conversationOpen === 'open'
             ? ['xs:left-[0px]', 'xs:static']
             : ['xs:left-[1000px]']
         "
@@ -49,10 +73,21 @@ const activeChatComponent = computed(() => {
         <FadeTransition name="fade" mode="out-in">
           <component
             :is="activeChatComponent"
-            :key="store.activeConversationId"
+            :key="chatStore.activeConversationId"
           />
         </FadeTransition>
       </div>
+
+      <!--Contact info modal-->
+      <ConversationInfoModal
+        v-if="actionStore.viewChatInfo"
+        :open="actionStore.openInfo"
+        :closeModal="() => (actionStore.openInfo = false)"
+      />
+      <ConversationInfoModalV2
+        :close-modal="() => (actionStore.viewConcatInfoOpen = false)"
+        :open="actionStore.viewConcatInfoOpen"
+      />
     </div>
   </KeepAlive>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, watchEffect } from 'vue'
 
 import useStore from "@src/store/store";
 
@@ -23,6 +23,22 @@ const chatStore = useChatStore()
 
 const showDropdown = ref(false);
 
+const unreadMsgCount = computed(() => {
+  let sumNoReaderNum = 0
+  for (const item of chatStore.chatList) {
+    sumNoReaderNum += item.no_reader_num
+  }
+  return sumNoReaderNum
+})
+
+const notificationNum = computed(() => chatStore.newFriendTipsNum + chatStore.newGroupTipsNum)
+
+watchEffect(() => {
+  if (chatStore.activeSidebarComponent === 'notifications') {
+    chatStore.newFriendTipsNum = chatStore.newGroupTipsNum = 0
+  }
+})
+
 // (event) change the active sidebar component when clicking on a NavLink
 const handleActiveSidebarComponentChange = (value: SidebarComponentName) => {
   chatStore.activeSidebarComponent = value;
@@ -44,7 +60,7 @@ const handleActiveSidebarComponentChange = (value: SidebarComponentName) => {
           <li>
             <NavLink
               :icon="ChatBubbleOvalLeftIcon"
-              :notifications="chatStore.unreadMsgCount"
+              :notifications="unreadMsgCount"
               title="Conversations"
               @click="() => handleActiveSidebarComponentChange('messages')"
               :active="chatStore.activeSidebarComponent === 'messages'"
@@ -78,21 +94,22 @@ const handleActiveSidebarComponentChange = (value: SidebarComponentName) => {
             <NavLink
               :icon="BellIcon"
               title="Notifications"
-              :notifications="3"
+              :notifications="notificationNum"
               @click="() => handleActiveSidebarComponentChange('notifications')"
               :active="chatStore.activeSidebarComponent === 'notifications'"
             />
           </li>
 
           <!--voice call button-->
-          <li>
-            <NavLink
-              :icon="PhoneIcon"
-              title="Call log"
-              @click="() => handleActiveSidebarComponentChange('phone')"
-              :active="chatStore.activeSidebarComponent === 'phone'"
-            />
-          </li>
+          <!-- TODO: voice call-->
+          <!--<li>-->
+          <!--  <NavLink-->
+          <!--    :icon="PhoneIcon"-->
+          <!--    title="Call log"-->
+          <!--    @click="() => handleActiveSidebarComponentChange('phone')"-->
+          <!--    :active="chatStore.activeSidebarComponent === 'phone'"-->
+          <!--  />-->
+          <!--</li>-->
 
           <!--settings button small screen-->
           <li class="xs:inline md:hidden">

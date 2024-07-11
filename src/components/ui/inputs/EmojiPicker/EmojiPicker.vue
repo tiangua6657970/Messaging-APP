@@ -7,6 +7,7 @@ import SearchInput from "@src/components/ui/inputs/SearchInput.vue";
 
 const props = defineProps<{
   show?: boolean;
+  handleSelect: (value: string) => void
 }>();
 
 // selected emoji groups
@@ -37,7 +38,7 @@ const handleActiveTabChange = (tab: string) => {
     <SearchInput class="w-full mb-5 rounded-[12px]" v-model="keyword" />
 
     <!--Emojis-->
-    <Emojis :keyword="keyword" :active-tab="activeTab" class="w-full mb-5" />
+    <Emojis :keyword="keyword" :active-tab="activeTab" class="w-full mb-5" :select="handleSelect" />
 
     <!--Skin tones-->
     <EmojiSkinTones class="w-full" />

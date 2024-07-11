@@ -25,21 +25,21 @@ const store = useStore();
     aria-controls="privacy-settings-collapse"
     @click="props.handleToggle()"
   >
-    <Typography variant="heading-2" class="mb-4"> Privacy & Safety </Typography>
-    <Typography variant="body-2"> Control your privacy settings</Typography>
+    <Typography variant="heading-2" class="mb-4"> 隐私与安全 </Typography>
+    <Typography variant="body-2"> 控制您的隐私设置 </Typography>
   </AccordionButton>
 
   <Collapse id="privacy-settings-collapse" :collapsed="props.collapsed">
     <SettingsSwitch
-      title="Show Last Seen"
-      description="Allow people to see your last login"
+      title="显示最后在线时间"
+      description="允许他人查看您的最后登录时间"
       :value="!!store.settings.lastSeen"
       :handle-toggle-switch="(value:boolean) => (store.settings.lastSeen = value)"
       class="mb-7"
     />
     <SettingsSwitch
-      title="Show Read Receipt"
-      description="Allow people to see whether or not you've read the message"
+      title="显示已读回执"
+      description="允许他人查看您是否已读消息"
       :value="!!store.settings.readReceipt"
       :handle-toggle-switch="
         (value:boolean) => (store.settings.readReceipt = value)
@@ -47,8 +47,8 @@ const store = useStore();
       class="mb-7"
     />
     <SettingsSwitch
-      title="Joining Groups"
-      description="Allow people to add you to groups"
+      title="加入群组"
+      description="允许他人将您加入群组"
       :value="!!store.settings.joiningGroups"
       :handle-toggle-switch="
         (value:boolean) => (store.settings.joiningGroups = value)
@@ -56,8 +56,8 @@ const store = useStore();
       class="mb-7"
     />
     <SettingsSwitch
-      title="Private Messages"
-      description="Receive messages from non-contacts"
+      title="私聊消息"
+      description="接收来自非联系人的消息"
       :value="!!store.settings.privateMessages"
       :handle-toggle-switch="
         (value:boolean) => (store.settings.privateMessages = value)

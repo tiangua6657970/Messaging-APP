@@ -1,55 +1,89 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import type { Ref } from "vue";
+import { computed, ref, watch } from 'vue'
 
-import useStore from "@src/store/store";
+import AccordionButton from '@src/components/ui/data-display/AccordionButton.vue'
+import Typography from '@src/components/ui/data-display/Typography.vue'
+import Collapse from '@src/components/ui/utils/Collapse.vue'
+import TextInput from '@src/components/ui/inputs/TextInput.vue'
+import DropFileUpload from '@src/components/ui/inputs/DropFileUpload.vue'
+import Button from '@src/components/ui/inputs/Button.vue'
+import useChatStore from '@src/store/chat'
+import Swal from 'sweetalert2'
 
-import AccordionButton from "@src/components/ui/data-display/AccordionButton.vue";
-import Typography from "@src/components/ui/data-display/Typography.vue";
-import Collapse from "@src/components/ui/utils/Collapse.vue";
-import TextInput from "@src/components/ui/inputs/TextInput.vue";
-import DropFileUpload from "@src/components/ui/inputs/DropFileUpload.vue";
-import Button from "@src/components/ui/inputs/Button.vue";
+const props = defineProps<{
+  collapsed: boolean
+  handleToggle: () => void
+}>()
 
-// Types
-interface AccountValues {
-  firstName: string | undefined;
-  lastName: string | undefined;
-  avatar: File | undefined;
+const chatStore = useChatStore()
+const chatUserinfo = computed(() => chatStore.chatUserinfo)
+
+const form = ref({
+  nickname: chatUserinfo.value.nickname,
+  avatar: chatUserinfo.value.avatar
+})
+
+watch(chatUserinfo, newVal => {
+  form.value.nickname = newVal.nickname
+  form.value.avatar = newVal.avatar
+})
+
+const previewAvatar = ref('')
+let avatarFile: File
+
+const loading = ref(false)
+
+async function handleFileChange(file: File) {
+  avatarFile = file
+  previewAvatar.value = URL.createObjectURL(file)
+  return
 }
 
-// Variables
-const props = defineProps<{
-  collapsed: boolean;
-  handleToggle: () => void;
-}>();
-
-const store = useStore();
-
-const accountValues: Ref<AccountValues> = ref({
-  firstName: store.user?.firstName,
-  lastName: store.user?.lastName,
-  avatar: undefined,
-});
-
-const loading = ref(false);
-
-// (event) handle submitting the values of the form.
-const handleSubmit = () => {
-  loading.value = true;
-
-  store.$patch({
-    user: {
-      ...store.user,
-      firstName: accountValues.value.firstName,
-      lastName: accountValues.value.lastName,
-    },
-  });
-
-  setTimeout(() => {
-    loading.value = false;
-  }, 2000);
-};
+// TODO: 更新用户信息
+async function handleSubmit() {
+  loading.value = true
+  const { nickname, avatar } = form.value
+  const promises = []
+  if (nickname !== chatUserinfo.value.nickname) {
+    promises.push(chatStore.updateChatUserinfo({ type: 0, content: nickname }))
+  }
+  if (avatarFile) {
+    const { err, data, msg } = await chatStore.uploadChatFile(avatarFile)
+    if (err) {
+      loading.value = false
+      Swal.fire({
+        title: '系统提示',
+        text: msg,
+        icon: 'error',
+        timer: 1500
+      }).then(res => {})
+      return
+    }
+    promises.push(
+      await chatStore.updateChatUserinfo({ type: 3, content: data.path })
+    )
+  }
+  if (!promises.length) {
+    Swal.fire({
+      title: '系统提示',
+      text: '您没有修改任何信息',
+      icon: 'info',
+      timer: 1500
+    }).then(res => {})
+    loading.value = false
+    return
+  }
+  Promise.all(promises).then(() => {
+    loading.value = false
+    Swal.fire({
+      title: '系统提示',
+      text: '修改成功！',
+      icon: 'success',
+      timer: 1500
+    }).then(res => {})
+    chatStore.refreshChatUserinfo()
+  })
+}
 </script>
 
 <template>
@@ -62,29 +96,23 @@ const handleSubmit = () => {
     aria-controls="account-settings-collapse"
     @click="handleToggle()"
   >
-    <Typography variant="heading-2" class="mb-4"> Account </Typography>
-    <Typography variant="body-2"> Update your profile details</Typography>
+    <Typography variant="heading-2" class="mb-4"> 账号</Typography>
+    <Typography variant="body-2">更新您的用户信息</Typography>
   </AccordionButton>
 
   <Collapse id="account-settings-collapse" :collapsed="props.collapsed">
     <TextInput
-      label="First name"
+      label="昵称"
       class="mb-7"
-      :value="accountValues?.firstName"
-      @value-changed="(value) => (accountValues.firstName = value)"
-    />
-    <TextInput
-      label="Last name"
-      class="mb-7"
-      :value="accountValues?.lastName"
-      @value-changed="(value) => (accountValues.lastName = value)"
+      :value="form.nickname"
+      @value-changed="value => (form.nickname = value)"
     />
     <DropFileUpload
-      label="Avatar"
+      label="头像"
       class="mb-7"
       accept="image/*"
-      :value="accountValues.avatar"
-      @value-changed="(value) => (accountValues.avatar = value)"
+      :image-url="previewAvatar || form.avatar"
+      @value-changed="handleFileChange"
     />
     <Button class="w-full py-4" @click="handleSubmit" :loading="loading">
       Save Settings

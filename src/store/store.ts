@@ -16,7 +16,6 @@ import type {
 const useStore = defineStore("chat", () => {
   // local storage
   const storage = JSON.parse(localStorage.getItem("chat") || "{}");
-
   // app status refs
   const status = ref("idle");
 
@@ -32,6 +31,13 @@ const useStore = defineStore("chat", () => {
   const settings: Ref<ISettings> = ref(
     storage.settings || defaults.defaultSettings
   );
+
+  setTimeout(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      settings.value.darkMode ? "dark" : "light"
+    )
+  }, 1000)
   const activeCall: Ref<ICall | undefined> = ref(defaults.activeCall);
   const recentEmoji: Ref<IEmoji[]> = ref(storage.recentEmoji || []);
   const emojiSkinTone: Ref<string> = ref(storage.emojiSkinTone || "neutral");

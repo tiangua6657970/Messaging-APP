@@ -11,6 +11,7 @@ const props = defineProps<{
   id?: string;
   label?: string;
   value?: File;
+  imageUrl?: string
   description?: string;
   accept?: string;
 }>();
@@ -51,7 +52,8 @@ const handleFileChange = (event: Event) => {
       @drop.prevent="handleFileDrop"
       :for="props.id"
       tabindex="0"
-      class="cursor-pointer w-full h-[100px] border border-dashed rounded-sm p-5 border-gray-200 dark:border-gray-500 flex justify-center items-center hover:bg-opacity-0 active:bg-opacity-0 focus:bg-opacity-0 outline-none focus:outline-none duration-500 transition-all"
+      class="cursor-pointer w-full h-[100px] bg-no-repeat bg-cover border border-dashed rounded-sm p-5 border-gray-200 dark:border-gray-500 flex justify-center items-center hover:bg-opacity-0 active:bg-opacity-0 focus:bg-opacity-0 outline-none focus:outline-none duration-500 transition-all"
+      :style="{ backgroundImage: `url(${imageUrl})` }"
       :class="{
         'bg-opacity-0': active,
         'bg-gray-50 dark:bg-opacity-70 dark:bg-gray-700 dark:hover:bg-opacity-0 dark:focus:bg-opacity-0':

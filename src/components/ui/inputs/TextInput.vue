@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { twMerge } from "tailwind-merge";
 
-defineEmits(["valueChanged"]);
+defineEmits(["valueChanged", 'focus', 'blur']);
 
 const props = defineProps<{
   id?: string;
@@ -51,6 +51,8 @@ const classes = twMerge(baseClasses, variantClasses.value, props.class);
         @input="
           $emit('valueChanged', ($event.target as HTMLInputElement).value)
         "
+        @focus="$emit('focus')"
+        @blur="$emit('blur')"
         :type="props.type || 'text'"
         :id="props.id"
         :value="props.value"

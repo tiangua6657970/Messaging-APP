@@ -44,18 +44,18 @@ const props = defineProps<{
         class="md:w-6 md:h-6 xs:w-5 xs:h-5 text-white opacity-80 hover:opacity-100"
       />
     </IconButton>
-
+    <!-- TODO delete media-->
     <!--delete media-->
-    <IconButton
-      aria-label="delete attachment"
-      class="mr-5"
-      variant="ghost"
-      title="delete attachment"
-    >
-      <TrashIcon
-        class="md:w-6 md:h-6 xs:w-5 xs:h-5 text-white opacity-80 hover:opacity-100"
-      />
-    </IconButton>
+    <!--<IconButton-->
+    <!--  aria-label="delete attachment"-->
+    <!--  class="mr-5"-->
+    <!--  variant="ghost"-->
+    <!--  title="delete attachment"-->
+    <!--&gt;-->
+    <!--  <TrashIcon-->
+    <!--    class="md:w-6 md:h-6 xs:w-5 xs:h-5 text-white opacity-80 hover:opacity-100"-->
+    <!--  />-->
+    <!--</IconButton>-->
 
     <!--close carousel-->
     <IconButton

@@ -34,6 +34,7 @@ type EmojiGroupNames =
 const props = defineProps<{
   keyword: string;
   activeTab: string;
+  select: (value: string) => void
 }>();
 
 const store = useStore();
@@ -89,6 +90,12 @@ watch(
 onMounted(() => {
   filteredEmojis.value = filterEmojis();
 });
+
+function handleClick(emoji: IEmoji) {
+  if (emoji.r) {
+    props.select(unicodeToEmoji(emoji.r))
+  }
+}
 </script>
 
 <template>
@@ -106,6 +113,7 @@ onMounted(() => {
             class="w-[30px] h-[30px] mr-1"
             :title="emoji.n[0]"
             :aria-label="emoji.n[0]"
+            @click="handleClick(emoji)"
           >
             {{ unicodeToEmoji(emoji.r) }}
           </IconButton>

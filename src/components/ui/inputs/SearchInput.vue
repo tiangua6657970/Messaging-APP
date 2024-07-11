@@ -41,7 +41,7 @@ const classes = twMerge(baseClasses, variantClasses.value, props.class);
     <input
       ref="input"
       type="text"
-      placeholder="Search.."
+      placeholder="搜索.."
       :class="classes"
       @input="$event => {
         $emit('update:modelValue', ($event.target as HTMLInputElement).value)

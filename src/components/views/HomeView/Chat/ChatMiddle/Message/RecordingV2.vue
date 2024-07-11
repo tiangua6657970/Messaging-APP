@@ -1,68 +1,75 @@
 <script setup lang="ts">
-import type { IRecording } from "@src/types";
-import type { Ref } from "vue";
+import type { Ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-import { ref, onMounted, onUnmounted, computed } from "vue";
-
-import { PauseIcon, PlayIcon } from "@heroicons/vue/24/outline";
-import Typography from "@src/components/ui/data-display/Typography.vue";
-import WaveSurfer from "wavesurfer.js";
-import Spinner from "@src/components/ui/utils/Spinner.vue";
-import { IMessageV2 } from "@src/typeV2";
+import { PauseIcon, PlayIcon } from '@heroicons/vue/24/outline'
+import Typography from '@src/components/ui/data-display/Typography.vue'
+import WaveSurfer from 'wavesurfer.js'
+import Spinner from '@src/components/ui/utils/Spinner.vue'
+import { IMessageV2 } from '@src/typeV2'
 
 const props = defineProps<{
-  message: IMessageV2;
-  self?: boolean;
-}>();
+  message: IMessageV2
+  self?: boolean
+}>()
 
-const wavesurfer: Ref<any> = ref(null);
-const playing = ref(false);
-const loading = ref(true);
+const wavesurfer: Ref<any> = ref(null)
+const playing = ref(false)
+const loading = ref(true)
+const time = computed(() => formatTime(props.message.content.length))
 
 const handleTogglePlay = () => {
   if (wavesurfer.value) {
     if (playing.value) {
-      playing.value = false;
-      wavesurfer.value.pause();
+      playing.value = false
+      wavesurfer.value.pause()
     } else {
-      playing.value = true;
-      wavesurfer.value.play();
+      playing.value = true
+      wavesurfer.value.play()
     }
   }
-};
+}
 
 // when mounted load the audio
 onMounted(() => {
   const waveform: HTMLElement | null = document.querySelector(
-    "#waveform-" + props.message.id
-  );
+    '#waveform-' + props.message.id
+  )
 
   if (waveform) {
     wavesurfer.value = WaveSurfer.create({
       container: waveform,
-      waveColor: "rgb(209 213 219)",
-      progressColor: "rgb(165 180 252)",
-      cursorColor: "transparent",
+      waveColor: 'rgb(209 213 219)',
+      progressColor: 'rgb(165 180 252)',
+      cursorColor: 'transparent',
       barWidth: 1,
       barRadius: 1,
       cursorWidth: 1,
       height: 30,
-      barGap: 5,
-    });
+      barGap: 5
+    })
 
     // load the audio
-    wavesurfer.value.load(props.message.content.url);
+    wavesurfer.value.load(props.message.content.fullURL)
 
-    wavesurfer.value.on("ready", function () {
-      loading.value = false;
-    });
+    wavesurfer.value.on('ready', function () {
+      loading.value = false
+    })
   }
-});
+})
+
+function formatTime(seconds: number) {
+  let minutes = Math.floor(seconds / 60)
+  let remainingSeconds = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
+    .toString()
+    .padStart(2, '0')}`
+}
 
 // when the component is unmounted stop thr audio
 onUnmounted(() => {
-  wavesurfer.value.pause();
-});
+  wavesurfer.value.pause()
+})
 </script>
 
 <template>
@@ -106,7 +113,7 @@ onUnmounted(() => {
       tabindex="0"
       aria-label="11 seconds"
     >
-      00:11
+      {{ time }}
     </Typography>
   </div>
 </template>

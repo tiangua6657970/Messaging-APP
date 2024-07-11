@@ -16,7 +16,11 @@ const useAuthStore = defineStore(
   },
   {
     persist: {
-      paths: ['token', 'userinfo', 'code']
+      paths: [
+        'token',
+        'userinfo',
+        'code',
+      ]
     }
   }
 )

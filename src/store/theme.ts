@@ -11,5 +11,9 @@ const useThemeStore = defineStore('themeStore', () => {
     themes,
     setThemes
   }
+}, {
+  persist: {
+    paths: ['themes']
+  }
 })
 export default useThemeStore
