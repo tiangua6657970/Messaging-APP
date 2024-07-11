@@ -17,6 +17,7 @@ import Swal from 'sweetalert2'
 import ForwardModal from '@src/components/shared/modals/ForwardModal.vue'
 import SelectContactModal from '@src/components/shared/modals/SelectContactModal.vue'
 import { showModal, showToast } from '@src/assets/utils'
+import AdminManagementModal from '@src/components/shared/modals/AdminManagementModal.vue'
 
 const store = useStore()
 const chatStore = useChatStore()
@@ -202,7 +203,7 @@ async function handleSelectContactModalFinish(selectedIds: number[]) {
       text: res1.msg || res2.msg,
       icon: 'error',
       timer: 1500
-    }).then(res => { })
+    }).then(res => {})
     return
   }
   Swal.fire({
@@ -210,39 +211,74 @@ async function handleSelectContactModalFinish(selectedIds: number[]) {
     text: '设置成功',
     icon: 'success',
     timer: 1500
-  }).then(res => { })
+  }).then(res => {})
   await chatStore.refreshMutedUserList()
 }
 </script>
 
 <template>
-  <div v-if="chatStore.currentChatInfo.group" class="h-full flex flex-col scrollbar-hidden containe">
-    <ChatTop :select-mode="selectMessageStore.selectMode" :handle-close-select="selectMessageStore.handleCloseSelect" />
-    <ChatMiddle ref="chatMiddleRef" :message-list="messageList" :selected-messages="selectMessageStore.selectedMessages"
+  <div
+    v-if="chatStore.currentChatInfo.group"
+    class="h-full flex flex-col scrollbar-hidden containe"
+  >
+    <ChatTop
+      :select-mode="selectMessageStore.selectMode"
+      :handle-close-select="selectMessageStore.handleCloseSelect"
+    />
+    <ChatMiddle
+      ref="chatMiddleRef"
+      :message-list="messageList"
+      :selected-messages="selectMessageStore.selectedMessages"
       :handle-select-message="selectMessageStore.handleSelectMessage"
-      :handle-deselect-message="selectMessageStore.handleDeselectMessage" :on-scroll="handleScroll" />
+      :handle-deselect-message="selectMessageStore.handleDeselectMessage"
+      :on-scroll="handleScroll"
+    />
     <ChatBottom :handle-send-text="handleSendText" />
 
-    <div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div
+      class="relative z-10"
+      aria-labelledby="slide-over-title"
+      role="dialog"
+      aria-modal="true"
+    >
       <!-- Background backdrop -->
       <transition name="fade">
-        <div v-if="actionStore.openChatInfo" class="fixed inset-0 bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
+        <div
+          v-if="actionStore.openChatInfo"
+          class="fixed inset-0 bg-gray-500 bg-opacity-75"
+          aria-hidden="true"
+        ></div>
       </transition>
 
       <!-- Slide-over panel -->
       <ChatInfo />
     </div>
-    <AddMemberToGroupModal :close-modal="() => (composeStore.selectContactOpen = false)"
-      :open="composeStore.selectContactOpen" />
-    <KickOutGroupModal :close-modal="() => (composeStore.kickOutGroupModalOpen = false)"
-      :open="composeStore.kickOutGroupModalOpen" />
-    <ForwardModal :close-modal="() => (actionStore.forwardModalOpen = false)" :open="actionStore.forwardModalOpen" />
-    <SelectContactModal :close-modal="() => (actionStore.selectContactModalOpen = false)"
-      :open="actionStore.selectContactModalOpen" :handle-finish="ids => {
+    <AddMemberToGroupModal
+      :close-modal="() => (composeStore.selectContactOpen = false)"
+      :open="composeStore.selectContactOpen"
+    />
+    <KickOutGroupModal
+      :close-modal="() => (composeStore.kickOutGroupModalOpen = false)"
+      :open="composeStore.kickOutGroupModalOpen"
+    />
+    <ForwardModal
+      :close-modal="() => (actionStore.forwardModalOpen = false)"
+      :open="actionStore.forwardModalOpen"
+    />
+    <SelectContactModal
+      :close-modal="() => (actionStore.selectContactModalOpen = false)"
+      :open="actionStore.selectContactModalOpen"
+      :handle-finish="
+        ids => {
           handleSelectContactModalFinish(ids)
           actionStore.selectContactModalOpen = false
         }
-        " />
+      "
+    />
+    <AdminManagementModal
+      :close-modal="() => (actionStore.adminManagementOpen = false)"
+      :open="actionStore.adminManagementOpen"
+    />
   </div>
 </template>
 <style></style>

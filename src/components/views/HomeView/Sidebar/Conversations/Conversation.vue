@@ -19,6 +19,7 @@ import useChatStore from '@src/store/chat'
 import useActionStore from '@src/store/action'
 import Swal from 'sweetalert2'
 import Button from '@src/components/ui/inputs/Button.vue'
+import * as linkifyjs from 'linkifyjs'
 
 const props = defineProps<{
   chat: IChat
@@ -30,6 +31,9 @@ const chatStore = useChatStore()
 const actionStore = useActionStore()
 const draftMessageMap = computed(() => actionStore.draftMessageMap)
 const activeConversationId = computed(() => chatStore.activeConversationId)
+const username = computed(
+  () => chatStore.chatUserinfo.nickname || chatStore.chatUserinfo.username
+)
 
 const showContextMenu = ref(false)
 
@@ -130,24 +134,39 @@ function clearArchive() {
 
 <template>
   <div class="select-none">
-    <button :aria-label="'conversation with' + chat.show_name" tabindex="0" v-click-outside="contextConfig"
-      @contextmenu.prevent="handleShowContextMenu" @click="$event => {
+    <button
+      :aria-label="'conversation with' + chat.show_name"
+      tabindex="0"
+      v-click-outside="contextConfig"
+      @contextmenu.prevent="handleShowContextMenu"
+      @click="
+        $event => {
           handleSelectConversation()
         }
-        "
+      "
       class="w-full h-[92px] px-5 py-6 mb-3 flex rounded focus:bg-indigo-50 dark:active:bg-gray-600 dark:focus:bg-gray-600 dark:hover:bg-gray-600 hover:bg-indigo-50 active:bg-indigo-100 focus:outline-none transition duration-500 ease-out relative"
       :class="{
         'md:bg-indigo-50': isActive,
         'md:dark:bg-gray-600': isActive
-      }">
+      }"
+    >
       <!--profile image-->
       <div class="mr-4">
-        <div :style="{ backgroundImage: `url(${chat.avatar})` }"
-          class="relative w-7 h-7 rounded-full bg-cover bg-center">
+        <div
+          :style="{ backgroundImage: `url(${chat.avatar})` }"
+          class="relative w-7 h-7 rounded-full bg-cover bg-center"
+        >
           <span
-            class="absolute right-0 -top-4 bg-indigo-400 rounded-full w-5 h-5 text-black opacity-60 text-xs dark:text-white dark:opacity-70"
-            v-if="chat.type === 1">
+            class="absolute right-0 -top-3 bg-indigo-400 rounded-full w-5 h-5 text-black opacity-60 text-xs dark:text-white dark:opacity-70"
+            v-if="chat.type === 1"
+          >
             G
+          </span>
+          <span
+            class="absolute right-0 -top-3 bg-yellow-400 rounded-full w-5 h-5 text-black opacity-60 text-xs dark:text-white dark:opacity-70"
+            v-else-if="chat.is_customer_service === 1"
+          >
+            C
           </span>
         </div>
       </div>
@@ -172,51 +191,94 @@ function clearArchive() {
         <div class="flex justify-between">
           <div>
             <!--draft Message-->
-            <Typography v-if="
-              draftMessageMap[chat.list_id] &&
-              chat.list_id !== activeConversationId
-            " variant="body-2" class="flex justify-start items-center text-red-400" no-color>
+            <Typography
+              v-if="
+                draftMessageMap[chat.list_id] &&
+                chat.list_id !== activeConversationId
+              "
+              variant="body-2"
+              class="flex justify-start items-center text-red-400"
+              no-color
+            >
               <span class="line-clamp-1">
                 草稿: {{ shorten(draftMessageMap[chat.list_id]) }}
               </span>
             </Typography>
 
             <!--recording name-->
-            <Typography v-else-if="chat.messageType === 'voice'" variant="body-2"
-              class="flex justify-start items-center">
-              <MicrophoneIcon class="w-4 h-4 mr-2 text-black opacity-60 dark:text-white dark:opacity-70"
-                :class="{ 'text-indigo-400': chat.no_reader_num }" />
+            <Typography
+              v-else-if="chat.messageType === 'voice'"
+              variant="body-2"
+              class="flex justify-start items-center"
+            >
+              <MicrophoneIcon
+                class="w-4 h-4 mr-2 text-black opacity-60 dark:text-white dark:opacity-70"
+                :class="{ 'text-indigo-400': chat.no_reader_num }"
+              />
               <span :class="{ 'text-indigo-400': chat.no_reader_num }">
                 Recording
               </span>
             </Typography>
 
             <!--last message content -->
-            <Typography v-else variant="body-2" class="flex justify-start items-center">
-              <span class="line-clamp-1 break-all" :class="{ 'text-indigo-400': chat.no_reader_num }">
-                {{ lastMessageContent }}
-              </span>
+            <Typography
+              v-else
+              variant="body-2"
+              class="flex justify-start items-center"
+            >
+              <div class="line-clamp-1 break-all">
+                <span
+                  class="text-yellow-400"
+                  v-if="chat.mentionUid && chat.no_reader_num"
+                  >@所有人
+                </span>
+                <span
+                  class="text-yellow-400"
+                  v-else-if="
+                    lastMessageContent.includes(username) && chat.no_reader_num
+                  "
+                  >[有人@我]
+                </span>
+                <span :class="{ 'text-indigo-400': chat.no_reader_num }">
+                  {{
+                    chat.no_reader_num && chat.mentionUid
+                      ? lastMessageContent.replace('@所有人', '')
+                      : lastMessageContent
+                  }}
+                </span>
+              </div>
             </Typography>
           </div>
 
           <div v-if="chat.no_reader_num">
-            <div class="w-[18px] h-[18px] flex justify-center items-center rounded-[50%] bg-indigo-300">
-              <Typography variant="body-1" no-color class="text-white">{{ chat.no_reader_num }}
+            <div
+              class="w-[18px] h-[18px] flex justify-center items-center rounded-[50%] bg-indigo-300"
+            >
+              <Typography variant="body-1" no-color class="text-white"
+                >{{ chat.no_reader_num }}
               </Typography>
             </div>
           </div>
         </div>
       </div>
-      <ChevronUpIcon class="absolute top-2 right-5 h-5 w-5 text-black opacity-60 dark:text-white dark:opacity-70"
-        v-if="chat.top === 1" />
+      <ChevronUpIcon
+        class="absolute top-2 right-5 h-5 w-5 text-black opacity-60 dark:text-white dark:opacity-70"
+        v-if="chat.top === 1"
+      />
     </button>
 
     <!--custom context menu-->
-    <Dropdown :close-dropdown="() => (showContextMenu = false)" :show="showContextMenu"
-      :handle-close="handleCloseContextMenu" :handle-click-outside="handleCloseContextMenu" :coordinates="{
+    <Dropdown
+      :close-dropdown="() => (showContextMenu = false)"
+      :show="showContextMenu"
+      :handle-close="handleCloseContextMenu"
+      :handle-click-outside="handleCloseContextMenu"
+      :coordinates="{
         left: contextMenuCoordinations?.x + 'px',
         top: contextMenuCoordinations?.y + 'px'
-      }" :position="['top-0']">
+      }"
+      :position="['top-0']"
+    >
       <!-- TODO: 查看会话 -->
       <!--<DropdownLink :handle-click="() => {-->
       <!--  handleOpenChatInfo()-->
@@ -225,38 +287,52 @@ function clearArchive() {
       <!--  查看会话-->
       <!--</DropdownLink>-->
 
-      <DropdownLink :handle-click="() => {
-          handleCloseContextMenu()
-          toggleArchive()
-        }
-        ">
+      <DropdownLink
+        :handle-click="
+          () => {
+            handleCloseContextMenu()
+            toggleArchive()
+          }
+        "
+      >
         <ArchiveBoxArrowDownIcon class="h-5 w-5 mr-3" />
         {{ archived ? '取消存档' : '存档会话' }}
       </DropdownLink>
 
-      <DropdownLink :handle-click="() => {
-          handleCloseContextMenu()
-          clearArchive()
-        }
-        " v-if="archived">
+      <DropdownLink
+        :handle-click="
+          () => {
+            handleCloseContextMenu()
+            clearArchive()
+          }
+        "
+        v-if="archived"
+      >
         <ArchiveBoxArrowDownIcon class="h-5 w-5 mr-3" />
         取消全部存档
       </DropdownLink>
 
-      <DropdownLink :handle-click="() => {
-          handleCloseContextMenu()
-          handleTopChat()
-        }
-        ">
+      <DropdownLink
+        :handle-click="
+          () => {
+            handleCloseContextMenu()
+            handleTopChat()
+          }
+        "
+      >
         <ArrowUpIcon class="h-5 w-5 mr-3" />
         {{ chat.top === 1 ? '取消置顶' : '置顶会话' }}
       </DropdownLink>
 
-      <DropdownLink :handle-click="() => {
-          handleDeleteConversation()
-          handleCloseContextMenu()
-        }
-        " color="danger">
+      <DropdownLink
+        :handle-click="
+          () => {
+            handleDeleteConversation()
+            handleCloseContextMenu()
+          }
+        "
+        color="danger"
+      >
         <TrashIcon class="h-5 w-5 mr-3" />
         删除会话
       </DropdownLink>

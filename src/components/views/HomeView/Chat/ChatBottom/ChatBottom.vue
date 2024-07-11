@@ -1,5 +1,5 @@
 <script setup lang="ts" xmlns="http://www.w3.org/1999/html">
-import { ComponentInstance, onMounted, Ref, ref, watch } from 'vue'
+import { ComponentInstance, computed, onMounted, Ref, ref, watch } from 'vue'
 
 import useStore from '@src/store/store'
 
@@ -26,6 +26,7 @@ import {
   showModal,
   showToast
 } from '@src/assets/utils'
+import TextareaV2 from '@src/components/ui/inputs/TextareaV2.vue'
 
 interface Props {
   handleSendText: (value: string) => void
@@ -34,7 +35,9 @@ interface Props {
 const props = defineProps<Props>()
 const store = useStore()
 const chatStore = useChatStore()
+const isGroupOwner = computed(() => chatStore.isGroupOwner)
 const selectMessageStore = useSelectMessageStore()
+const member = computed(() => chatStore.currentChatInfo.member)
 const actionStore = useActionStore()
 const mentionUid = ref<string>()
 
@@ -83,7 +86,7 @@ async function handleSend() {
       text: value.value,
       answerMsgText: replyMessage && replyMessage.content.text,
       answerMsgId: replyMessage && replyMessage.id,
-      mentionUid: mentionUid.value
+      mentionUid: (isGroupOwner.value && value.value.includes('@所有人')) as any as string,
     },
     content_type: messageType
   })
@@ -306,16 +309,24 @@ function handleUploadImageFile() {
       <!--message textarea-->
       <div class="grow md:mr-5 xs:mr-4 self-end">
         <div class="relative">
-          <Textarea
+          <!--<Textarea-->
+          <!--  ref="textareaRef"-->
+          <!--  v-model="value"-->
+          <!--  :value="value"-->
+          <!--  class="max-h-[80px] pr-[50px] resize-none scrollbar-hidden"-->
+          <!--  auto-resize-->
+          <!--  cols="30"-->
+          <!--  rows="1"-->
+          <!--  :placeholder="chatStore.isMuted ? '禁言了' : '在这里写下你的消息'"-->
+          <!--  aria-label="Write your message here"-->
+          <!--  @send="handleSend"-->
+          <!--/>-->
+          <TextareaV2
             ref="textareaRef"
-            v-model="value"
             :value="value"
-            class="max-h-[80px] pr-[50px] resize-none scrollbar-hidden"
-            auto-resize
-            cols="30"
-            rows="1"
+            v-model="value"
             :placeholder="chatStore.isMuted ? '禁言了' : '在这里写下你的消息'"
-            aria-label="Write your message here"
+            :member="member"
             @send="handleSend"
           />
 

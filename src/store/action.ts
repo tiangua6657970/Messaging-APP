@@ -28,7 +28,7 @@ const useActionStore = defineStore('actionStore', () => {
   const forwardContent = ref()
 
   const selectContactModalOpen = ref(false)
-  const selectContactModalActionType = ref<'mute'>('mute')
+  const adminManagementOpen = ref(false)
 
   const chatStore = useChatStore()
 
@@ -93,7 +93,10 @@ const useActionStore = defineStore('actionStore', () => {
 
   async function handleMuteManagement() {
     selectContactModalOpen.value = true
-    selectContactModalActionType.value = 'mute'
+  }
+
+  async function handleAdminManagement() {
+    adminManagementOpen.value = true
   }
 
   watch(viewChatInfo, newVal => {
@@ -135,8 +138,9 @@ const useActionStore = defineStore('actionStore', () => {
     forwardType,
     forwardContent,
     selectContactModalOpen,
-    selectContactModalActionType,
+    adminManagementOpen,
     handleMuteManagement,
+    handleAdminManagement,
     setReply,
     setPin,
     setDraftMessage,

@@ -2,6 +2,7 @@
 import { computed, Ref, ref } from 'vue'
 
 import linkifyStr from 'linkify-string'
+import "linkify-plugin-mention"
 
 import Typography from '@src/components/ui/data-display/Typography.vue'
 import MessageContextMenu from '@src/components/views/HomeView/Chat/ChatMiddle/Message/MessageContextMenu.vue'
@@ -12,7 +13,6 @@ import RecordingV2 from '@src/components/views/HomeView/Chat/ChatMiddle/Message/
 import AttachmentsV2 from '@src/components/views/HomeView/Chat/ChatMiddle/Message/AttachmentsV2.vue'
 import CfNameCard from '@src/components/cf-name-card/cf-name-card.vue'
 import useSelectMessageStore from '@src/store/selectMessage'
-
 const props = defineProps<{
   message: IMessageV2
   followUp: boolean
@@ -83,7 +83,7 @@ function handleRootClick(e: Event) {
     <div class="xs:mb-6 md:mb-5 flex" :class="{ 'justify-end': self }" @click="handleRootClick">
       <!--avatar-->
       <div class="mr-4" :class="{ 'ml-[36px]': followUp && !divider }">
-        <div :aria-label="message.user_info.name" class="outline-none" v-if="showAvatar">
+        <div :aria-label="message.user_info.name" v-if="showAvatar">
           <div :style="{
             backgroundImage: `url(${message.user_info.avatar})`
           }" class="w-[36px] h-[36px] bg-cover bg-center rounded-full"></div>
@@ -122,6 +122,13 @@ function handleRootClick(e: Event) {
                 format: {
                   url: value =>
                     value.length > 50 ? value.slice(0, 50) + `…` : value
+                },
+                target: '_blank',
+                formatHref: {
+                  mention: value => '#'
+                },
+                tagName: {
+                  mention: () => 'span'
                 }
               })
                 " tabindex="0">

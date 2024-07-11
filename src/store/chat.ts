@@ -718,6 +718,17 @@ const useChatStore = defineStore(
         }
       )
     }
+    // 群内禁止好友
+    async function setAdmin(payload: { users: number[] }) {
+      return await chatRequest<{ user_ids: number[] }>(
+        'im/message/setGroupAdmin',
+        {
+          list_id: activeConversationId.value,
+          type: 1,
+          users: JSON.stringify(payload.users)
+        }
+      )
+    }
 
     // 搜索用户
     async function searchUsers(payload: {
@@ -876,6 +887,7 @@ const useChatStore = defineStore(
       toggleGroupFriendAddition,
       refreshMutedUserList,
       muteUser,
+      setAdmin,
       getUserinfoById,
       refreshFriendRequestList,
       friendRequestList,

@@ -196,6 +196,18 @@ async function handleDeleteContact() {
             class="w-5 h-5 stoke-1 text-black opacity-70 dark:text-white dark:opacity-70 transition-all duration-300"
           />
         </div>
+        <div
+          class="flex justify-between items-center mb-7 cursor-pointer"
+          @click="actionStore.handleAdminManagement"
+          v-if="isGroupOwner"
+        >
+          <Typography class="text-indigo-400" noColor variant="body-2"
+          >管理员管理
+          </Typography>
+          <ChevronRightIcon
+            class="w-5 h-5 stoke-1 text-black opacity-70 dark:text-white dark:opacity-70 transition-all duration-300"
+          />
+        </div>
         <SettingsSwitch
           :handle-toggle-switch="toggleMuteAll"
           :value="currentChatInfo.group.is_msg === 1"

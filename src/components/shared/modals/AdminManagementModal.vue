@@ -9,19 +9,24 @@ import { computed, ref, watch } from 'vue'
 import useChatStore from '@src/store/chat'
 import { IFriend } from '@src/typeV2'
 import ContactItemV2 from '@src/components/shared/blocks/ContactItemV2.vue'
+import { showToast } from '@src/assets/utils'
 
 const props = defineProps<{
   open: boolean
   closeModal: () => void
-  handleFinish?: (selectedContactId: number[]) => void
 }>()
 const chatStore = useChatStore()
+const searchText = ref('')
+const member = computed(() => chatStore.currentChatInfo.member)
 const currentChatInfo = computed(() => chatStore.currentChatInfo)
 const selectedContactId = ref<number[]>([])
+
+console.log('selectedContactId', selectedContactId.value)
 
 const isContactSelected = (contact: IFriend) => {
   return selectedContactId.value.includes(contact.user_id)
 }
+
 function handleSelectedContactsChange(contact: IFriend) {
   if (selectedContactId.value.includes(contact.user_id)) {
     selectedContactId.value.splice(
@@ -36,16 +41,24 @@ function handleSelectedContactsChange(contact: IFriend) {
 watch(
   () => props.open,
   newVal => {
-    if (newVal) {
-      selectedContactId.value = chatStore.mutedUserList.slice()
-    } else {
-      selectedContactId.value = []
+    if (props.open) {
+      selectedContactId.value = member.value
+        .filter(item => item.is_admin === 1)
+        .map(item => item.user_id)
     }
   }
 )
 
-function _handleFinish() {
-  props.handleFinish && props.handleFinish(selectedContactId.value)
+async function handleFinish() {
+  const { err, msg } = await chatStore.setAdmin({
+    users: selectedContactId.value
+  })
+  showToast({ text: msg, icon: err ? 'error' : 'success' })
+  if (err) {
+    return
+  }
+  chatStore.refreshChatInfo().then()
+  props.closeModal()
 }
 </script>
 
@@ -62,7 +75,7 @@ function _handleFinish() {
             class="default-outline"
             tabindex="0"
           >
-            管理员
+            管理员管理
           </Typography>
 
           <Button
@@ -76,16 +89,16 @@ function _handleFinish() {
         </div>
         <!--search-->
         <div class="mx-5 mt-3 mb-5">
-          <SearchInput />
+          <SearchInput v-model="searchText" />
         </div>
         <!--contacts-->
         <ScrollBox class="overflow-y-scroll max-h-[200px] mb-5">
-          <template v-for="(contact, index) in currentChatInfo.member" :key="index">
+          <template v-for="(contact, index) in member" :key="index">
             <ContactItemV2
               :contact="contact"
               @click="handleSelectedContactsChange(contact)"
               :active="isContactSelected(contact)"
-              v-if="contact.is_admin !== 2"
+              v-if="contact.user_id !== currentChatInfo.group.main_id"
             >
               <template v-slot:checkbox>
                 <Checkbox :value="isContactSelected(contact)" />
@@ -98,7 +111,7 @@ function _handleFinish() {
           <!--next button-->
           <Button
             class="px-5 bg-indigo-400 hover:bg-indigo-500 active:bg-indigo-500"
-            @click="_handleFinish"
+            @click="handleFinish"
           >
             确定
           </Button>
